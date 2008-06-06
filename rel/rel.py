@@ -32,7 +32,7 @@ mapping = {
     'poll': PollRegistrar,
 }
 
-def __display(text):
+def _display(text):
     if verbose:
         print "Registered Event Listener output:",text
 
@@ -51,17 +51,22 @@ def __report():
     return True
 
 class Thread_Checker(object):
-    def __init__(self):
+    def __init__(self, threaded):
+        self.active = threaded and registrar == pyevent
+        if threaded and registrar != pyevent:
+            _display('GIL hack unnecessary for non-pyevent registrar. GIL hack disabled.')
         self.go()
 
     def go(self):
-        if registrar == pyevent:
+        if self.active:
+            _display('Thread Checking Enabled')
             self.checker = timeout(1,self.check)
             self.sleeper = timeout(0.01, self.release)
             self.sleeper.delete()
 
     def stop(self):
-        if registrar == pyevent:
+        if self.active:
+            _display('Thread Checking Disabled')
             self.checker.delete()
             self.sleeper.delete()
 
@@ -72,11 +77,11 @@ class Thread_Checker(object):
     def check(self):
         if threading.activeCount() > 1:
             if not self.sleeper.pending():
-                __display('Enabling GIL hack')
+                _display('Enabling GIL hack')
                 self.sleeper.add(.01)
         else:
             if self.sleeper.pending():
-                __display('Disabling GIL hack')
+                _display('Disabling GIL hack')
                 self.sleeper.delete()
         return True
 
@@ -99,12 +104,13 @@ def initialize(methods=supported_methods,options=()):
     possible options:
         'verbose' - prints out certain events
         'report' - prints status of non-pyevent registrar every 5 seconds
+        'strict' - ONLY try specified methods
+        'threaded' - enable GIL hack -- pyevent only!
     """
     global registrar
     global threader
     global verbose
-    if "verbose" in options:
-        verbose = True
+    verbose = "verbose" in options
     if "strict" not in options:
         for m in supported_methods:
             if m not in methods:
@@ -114,13 +120,16 @@ def initialize(methods=supported_methods,options=()):
             registrar = get_registrar(method)
             break
         except:
-            __display('Could not import "%s"'%method)
+            _display('Could not import "%s"'%method)
     if registrar is None:
         raise ImportError, "Could not import any of given methods: %s" % (methods,)
-    threader = Thread_Checker()
-    if "report" in options and registrar != pyevent:
-        timeout(5,__report)
-    __display('Initialized with "%s"'%method)
+    _display('Initialized with "%s"'%method)
+    threader = Thread_Checker('threaded' in options)
+    if "report" in options:
+        if registrar == pyevent:
+            _display('Reporting disabled in pyevent. Choose epoll, poll, or select to enable reporting.')
+        else:
+            timeout(5,__report)
     return method
 
 def read(sock,cb,*args):

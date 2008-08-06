@@ -16,7 +16,7 @@ class Event(object):
         self.registrar = registrar
         self.cb = cb
         self.arg = arg
-        self.timeout = self.registrar.timeout(0,self.callback)
+        self.timeout = self.registrar.timeout(None,self.callback)
         self.evtype = evtype or 1
         self.handle = handle
         self.children = []
@@ -37,8 +37,8 @@ class Event(object):
                 tmp.persistent()
             self.children.append(tmp)
 
-    def add(self, delay=0):
-        if delay:
+    def add(self, delay=None):
+        if delay is not None:
             self.timeout.add(delay)
         for child in self.children:
             child.add()
@@ -72,7 +72,7 @@ class SocketIO(object):
         if noadd in self.args:
             self.args = ()
             return
-        self.timeout = self.registrar.timeout(0,self.callback)
+        self.timeout = self.registrar.timeout(None,self.callback)
         self.add()
 
     def __repr__(self):
@@ -84,8 +84,8 @@ class SocketIO(object):
     def persistent(self):
         self.persist = True
 
-    def add(self, delay=0):
-        if delay:
+    def add(self, delay=None):
+        if delay is not None:
             self.timeout.add(delay)
         self.registrar.add(self)
         self.active = 1
@@ -111,7 +111,7 @@ class Signal(object):
         if noadd in self.args:
             self.args = ()
             return
-        self.timeout = self.registrar.timeout(0,self.callback)
+        self.timeout = self.registrar.timeout(None,self.callback)
         self.add()
 
     def __repr__(self):
@@ -120,8 +120,8 @@ class Signal(object):
             cbname = self.cb.im_class.__name__ + "." + cbname
         return '<Signal Object | Callback:"%s">'%cbname
 
-    def add(self, delay=0):
-        if delay:
+    def add(self, delay=None):
+        if delay is not None:
             self.timeout.add(delay)
         signal.signal(self.sig,self.callback)
         self.active = 1
@@ -158,10 +158,10 @@ class Timer(object):
             cbname = self.cb.im_class.__name__ + "." + cbname
         return '<Timer Object | Callback:"%s">'%cbname
 
-    def add(self, delay=0):
+    def add(self, delay=None):
         self.delay = delay
         self.expiration = None
-        if self.delay:
+        if self.delay is not None:
             self.expiration = time.time()+self.delay
             self.registrar.add_timer(self)
 

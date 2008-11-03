@@ -21,6 +21,7 @@ try:
 except:
     pyevent = None
 
+running = False
 registrar = None
 threader = None
 verbose = False
@@ -149,14 +150,19 @@ def signal(sig, callback, *args):
     return registrar.signal(sig,callback,*args)
 
 def dispatch():
-    check_init()
-    registrar.dispatch()
+    global running
+    if not running:
+        running = True
+        check_init()
+        registrar.dispatch()
 
 def loop():
     check_init()
     registrar.loop()
 
 def abort():
+    global running
+    running = False
     check_init()
     registrar.abort()
 

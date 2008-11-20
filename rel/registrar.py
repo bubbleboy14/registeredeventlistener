@@ -61,6 +61,9 @@ class Registrar(object):
 
     def abort(self):
         self.run_dispatch = False
+        for ev_list in self.events.values():
+            for sockio in ev_list.values():
+                sockio.sock.close()
 
     def signal(self,sig,cb,*args):
         return Signal(self,sig,cb,*args)

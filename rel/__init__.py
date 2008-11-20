@@ -1,7 +1,7 @@
 from rel import supported_methods, initialize, read, write, timeout, signal, event, dispatch, loop, abort, init, sys, EV_PERSIST, EV_READ, EV_SIGNAL, EV_TIMEOUT, EV_WRITE
 
 def override():
-    if sys.modules['event'].__class__.__name__ == "fakemodule":
+    if 'event' in sys.modules and sys.modules['event'].__class__.__name__ == "fakemodule":
         return
     class fakemodule(object):
         def __init__(self, **kwargs):

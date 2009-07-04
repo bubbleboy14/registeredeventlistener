@@ -1,12 +1,13 @@
 from listener import Event, SocketIO, Timer, Signal, contains
-import select, signal
+import select, signal, time
 try:
     import epoll
 except ImportError:
     epoll = None
 
-LISTEN_SELECT = .001
-LISTEN_POLL = 10
+LISTEN_SELECT = 0#.001
+LISTEN_POLL = 0#10
+SLEEP_SEC = .001
 
 def kbint(signals):
     if signal.SIGINT in signals:
@@ -55,6 +56,7 @@ class Registrar(object):
                 self.run_dispatch = False
 
     def loop(self):
+        time.sleep(SLEEP_SEC)
         e = self.check_events()
         t = self.check_timers()
         return e or t or self.signals

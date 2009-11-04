@@ -37,7 +37,8 @@ class Timer(object):
         self.count = 0
         self.goal = s + m * 60 + h * 360
         if self.count == self.goal:
-            error("Timer can not run for 0 seconds")
+            notice("USAGE: %s"%(RT_USAGE,))
+            exit()
         self.mp3 = mp3
         problem = "no sound file path specified"
         if self.mp3:

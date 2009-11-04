@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='rel',
-    version='0.2.6',
+    version='0.2.6.1',
     author='Mario Balibrera',
     author_email='mario.balibrera@gmail.com',
     license='MIT License',
@@ -13,6 +13,10 @@ setup(
         'rel',
     ],
     zip_safe = False,
+    entry_points = '''
+        [console_scripts]
+        rtimer = rel.tools:timerCLI
+    ''',
     classifiers = [
         'Development Status :: 3 - Alpha',
         'Environment :: Console',

@@ -129,7 +129,11 @@ class SelectRegistrar(Registrar):
 class PollRegistrar(Registrar):
     def __init__(self):
         Registrar.__init__(self)
-        self.poll = select.poll()
+        try:
+            self.poll = select.poll()
+        except AttributeError:
+            # Probably a platform without poll support, such as Windows
+            raise ImportError, "could not import poll"
 
     def add(self, event):
         self.events[event.evtype][event.fd] = event
@@ -173,5 +177,7 @@ class PollRegistrar(Registrar):
 
 class EpollRegistrar(PollRegistrar):
     def __init__(self):
+        if epoll is None:
+            raise ImportError, "could not import epoll"
         Registrar.__init__(self)
         self.poll = epoll.poll()

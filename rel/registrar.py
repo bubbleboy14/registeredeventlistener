@@ -12,7 +12,7 @@ SLEEP_SEC = .001
 def kbint(signals):
     if signal.SIGINT in signals:
         return True
-    raise KeyboardInterrupt
+    raise KeyboardInterrupt("You have not set a Keyboard Interrupt callback. To do so, use: 'rel.signal(2, your_callback_function)'.")
 
 class Registrar(object):
     def __init__(self):

@@ -1,11 +1,21 @@
 #!/usr/bin/env python
-
+# -*- coding: us-ascii -*-
+# vim:ts=4:sw=4:softtabstop=4:smarttab:expandtab
+#
 """
-REL Test Suite
+REL Test Suite - regular unittest compatible suite
 Submitted by Chris Clark on 10/12/2011. Thanks, Chris!
 
 Original code here:
 http://code.google.com/r/clach04-pyeventtestfixes/source/browse/test.py
+
+Sample usage:
+
+    rel\test.py
+    rel\test.py -v
+    rel\test.py -v EventTest.test_exception EventTest.test_timeout
+    ... etc.
+
 """
 
 import rel
@@ -69,7 +79,6 @@ class EventTest(unittest.TestCase):
             now = time.time()
             self.call_back_ran = True
             assert int(now - ts['start']) == ts['secs'], 'timeout failed'
-        print 'test_timeout'
         ts = {'start': time.time(), 'secs': 5}
         ev = event.event(__timeout_cb, arg=ts)
         ev.add(ts['secs'])
@@ -81,7 +90,6 @@ class EventTest(unittest.TestCase):
             self.call_back_ran = True
             dur = int(time.time() - start)
             assert dur == secs, 'timeout2 failed'
-        print 'test_timeout2'
         event.timeout(5, __timeout2_cb, time.time(), 5)
         event.dispatch()
         self.assertTrue(self.call_back_ran, 'call back did not run')
@@ -96,7 +104,6 @@ class EventTest(unittest.TestCase):
                     ev.delete()
                 elif evtype == event.EV_TIMEOUT:
                     os.kill(os.getpid(), signal.SIGUSR1)
-            print 'test_signal'
             event.event(__signal_cb, handle=signal.SIGUSR1,
                         evtype=event.EV_SIGNAL).add()
             event.event(__signal_cb).add(2)
@@ -112,7 +119,6 @@ class EventTest(unittest.TestCase):
                     event.abort()
                 else:
                     os.kill(os.getpid(), signal.SIGUSR1)
-            print 'test_signal2'
             event.signal(signal.SIGUSR1, __signal2_cb, signal.SIGUSR1)
             event.timeout(2, __signal2_cb)
    
@@ -121,7 +127,6 @@ class EventTest(unittest.TestCase):
             self.call_back_ran = True
             buf = os.read(fd, 1024)
             assert buf == 'hi niels', 'read event failed'
-        print 'test_read'
         pipe = os.pipe()
         event.event(__read_cb, handle=pipe[0],
                     evtype=event.EV_READ).add()
@@ -133,7 +138,6 @@ class EventTest(unittest.TestCase):
         def __read2_cb(fd, msg):
             self.call_back_ran = True
             assert os.read(fd, 1024) == msg, 'read2 event failed'
-        print 'test_read2'
         msg = 'hello world'
         pipe = os.pipe()
         event.read(pipe[0], __read2_cb, pipe[0], msg)
@@ -142,20 +146,16 @@ class EventTest(unittest.TestCase):
         self.assertTrue(self.call_back_ran, 'call back did not run')
 
     def test_exception(self):
-        print 'test_exception'
-       
         def __bad_cb(foo):
             raise NotImplementedError(foo)
-        event.timeout(0, __bad_cb, 'bad callback')
-        try:
+
+        def real_test_exception():
+            event.timeout(0, __bad_cb, 'bad callback')
             event.dispatch()
-        except NotImplementedError:
-            # FIXME check exception is raised
-            pass
+
+        self.assertRaises(NotImplementedError, real_test_exception)
 
     def test_abort(self):
-        print 'test_abort'
-       
         def __time_cb():
             raise NotImplementedError('abort failed!')
         event.timeout(5, __time_cb)
@@ -163,11 +163,9 @@ class EventTest(unittest.TestCase):
         event.dispatch()
 
     def test_callback_exception(self):
-        print 'test_callback_exception'
-       
         def __raise_cb(exc):
             raise exc
-       
+
         def __raise_catch_cb(exc):
             try:
                 raise exc
@@ -180,12 +178,11 @@ class EventTest(unittest.TestCase):
     def test_thread(self):
         self.call_back_ran_a = False
         self.call_back_ran_b = False
-        print 'test_thread'
-       
+
         def __time_cb(d):
             self.call_back_ran_a = True
             assert d['count'] == 3
-       
+
         def __time_thread(count, d):
             self.call_back_ran_b = True
             for i in range(count):
@@ -200,5 +197,3 @@ class EventTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-

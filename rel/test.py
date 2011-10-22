@@ -50,7 +50,6 @@ if possible_build_dir:
 
 import event
 
-
 class EventTest(unittest.TestCase):
 
     def skip(self, reason):
@@ -69,7 +68,7 @@ class EventTest(unittest.TestCase):
         """
         if unittest2:
             raise unittest2.SkipTest(reason)
-   
+
     def setUp(self):
         self.call_back_ran = False
         event.init()
@@ -121,7 +120,7 @@ class EventTest(unittest.TestCase):
                     os.kill(os.getpid(), signal.SIGUSR1)
             event.signal(signal.SIGUSR1, __signal2_cb, signal.SIGUSR1)
             event.timeout(2, __signal2_cb)
-   
+
     def test_read(self):
         def __read_cb(ev, fd, evtype, pipe):
             self.call_back_ran = True
@@ -196,4 +195,6 @@ class EventTest(unittest.TestCase):
         self.assertTrue(self.call_back_ran_b, 'call back b did not run')
 
 if __name__ == '__main__':
+    if raw_input("run these tests with select registrar? (y/N)").lower().startswith("y"):
+        rel.initialize(['select'], ['verbose', 'strict'])
     unittest.main()

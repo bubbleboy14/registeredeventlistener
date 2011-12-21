@@ -14,7 +14,7 @@ functions:
     init()
 """
 import sys, threading, time, pprint
-from registrar import SelectRegistrar, PollRegistrar, EpollRegistrar
+from registrar import SelectRegistrar, PollRegistrar, EpollRegistrar, KqueueRegistrar
 from listener import EV_PERSIST, EV_READ, EV_SIGNAL, EV_TIMEOUT, EV_WRITE
 try:
     import event as pyevent
@@ -65,12 +65,13 @@ running = False
 registrar = None
 threader = None
 verbose = False
-supported_methods = ['pyevent','epoll','poll','select']
+supported_methods = ['pyevent','epoll','poll','kqueue','select']
 
 mapping = {
     'select': SelectRegistrar,
     'epoll': EpollRegistrar,
     'poll': PollRegistrar,
+    'kqueue': KqueueRegistrar
 }
 
 def _display(text):
@@ -141,7 +142,7 @@ def get_registrar(method):
 
 def initialize(methods=supported_methods,options=()):
     """
-    initialize(methods=['pyevent','epoll','poll','select'],options=[])
+    initialize(methods=['pyevent','epoll','poll','kqueue','select'],options=[])
     possible options:
         'verbose' - prints out certain events
         'report' - prints status of non-pyevent registrar every 5 seconds

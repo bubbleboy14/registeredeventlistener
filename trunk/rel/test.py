@@ -197,4 +197,6 @@ class EventTest(unittest.TestCase):
 if __name__ == '__main__':
     if raw_input("run these tests with select registrar? (y/N)").lower().startswith("y"):
         rel.initialize(['select'], ['verbose', 'strict'])
+    elif raw_input('verbose mode? (y/N)').lower().startswith('y'):
+        rel.initialize(options=['verbose'])
     unittest.main()

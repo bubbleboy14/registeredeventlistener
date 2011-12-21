@@ -5,6 +5,7 @@ try:
 except ImportError:
     epoll = None
 
+LISTEN_KQUEUE = 0
 LISTEN_SELECT = 0#.001
 LISTEN_POLL = 0#10
 SLEEP_SEC = .001
@@ -97,6 +98,43 @@ class Registrar(object):
             self.events['read'][fd].callback()
         if fd in self.events['write']:
             self.events['write'][fd].callback()
+
+class KqueueRegistrar(Registrar):
+    def __init__(self):
+        Registrar.__init__(self)
+        if not hasattr(select, "kqueue"):
+            raise ImportError, "could not find kqueue -- need Python 2.6+ on BSD (including OSX)!"
+        self.kq = select.kqueue()
+        self.kqf = {
+            "read": select.KQ_FILTER_READ,
+            "write": select.KQ_FILTER_WRITE
+        }
+
+    def abort(self):
+        Registrar.abort(self)
+        self.kq.close()
+    
+    def add(self, event):
+        self.events[event.evtype][event.fd] = event
+        self.kq.control([select.kevent(event.fd, self.kqf[event.evtype], select.KQ_EV_ADD)], 0)
+    
+    def remove(self, event):
+        if event.fd in self.events[event.evtype]:
+            del self.events[event.evtype][event.fd]
+        self.kq.control([select.kevent(event.fd, self.kqf[event.evtype], select.KQ_EV_DELETE)], 0)
+    
+    def check_events(self):
+        if self.events['read'] or self.events['write']:
+            elist = self.kq.control(None, 1000, LISTEN_KQUEUE)
+            for e in elist:
+                if e.filter == self.kqf['read']:
+                    self.events['read'][e.ident].callback()
+                elif e.filter == self.kqf['write']:
+                    self.events['write'][e.ident].callback()
+                else:
+                    self.handle_error(e.ident)
+            return True
+        return False
 
 class SelectRegistrar(Registrar):
     def __init__(self):

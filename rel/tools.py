@@ -92,7 +92,10 @@ def timerCLI():
     from optparse import OptionParser
     parser = OptionParser(RT_USAGE)
     parser.add_option("-m", "--mp3_file_path", dest="mp3", default=RT_MP3, help="location of alarm sound mp3. default: %s"%(RT_MP3,))
+    parser.add_option("-v", "--verbose", dest="verbose", default=False, action="store_true", help="run timer in verbose mode")
     options, arguments = parser.parse_args()
+    if options.verbose:
+        rel.initialize(options=["verbose"])
     try:
         arguments = [int(arg) for arg in arguments]
     except:

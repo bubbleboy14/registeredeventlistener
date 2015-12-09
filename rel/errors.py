@@ -1,0 +1,2 @@
+class AbortBranch(Exception):
+	pass

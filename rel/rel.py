@@ -207,6 +207,10 @@ def abort():
     check_init()
     registrar.abort()
 
+def abort_branch():
+    check_init()
+    registrar.abort_branch()
+
 def init():
     global running
     running = False

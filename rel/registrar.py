@@ -1,4 +1,5 @@
 from listener import Event, SocketIO, Timer, Signal, contains
+from errors import AbortBranch
 import select, signal, time
 try:
     import epoll
@@ -68,6 +69,9 @@ class Registrar(object):
             for sockio in ev_list.values():
                 sockio.delete()
 
+    def abort_branch(self):
+        raise AbortBranch()
+
     def signal(self,sig,cb,*args):
         return Signal(self,sig,cb,*args)
 
@@ -93,11 +97,17 @@ class Registrar(object):
                 self.rmlist.append(timer)
         return bool(self.timers)
 
+    def callback(self, etype, fd):
+        try:
+            self.events[etype][fd].callback()
+        except AbortBranch, e:
+            pass # just go on with other code :)
+
     def handle_error(self, fd):
         if fd in self.events['read']:
-            self.events['read'][fd].callback()
+            self.callback('read', fd)
         if fd in self.events['write']:
-            self.events['write'][fd].callback()
+            self.callback('write', fd)
 
 class KqueueRegistrar(Registrar):
     def __init__(self):
@@ -128,9 +138,9 @@ class KqueueRegistrar(Registrar):
             elist = self.kq.control(None, 1000, LISTEN_KQUEUE)
             for e in elist:
                 if e.filter == self.kqf['read']:
-                    self.events['read'][e.ident].callback()
+                    self.callback('read', e.ident)
                 elif e.filter == self.kqf['write']:
-                    self.events['write'][e.ident].callback()
+                    self.callback('write', e.ident)
                 else:
                     self.handle_error(e.ident)
             return True
@@ -156,9 +166,9 @@ class SelectRegistrar(Registrar):
             except select.error:
                 return kbint(self.signals)
             for fd in r:
-                self.events['read'][fd].callback()
+                self.callback('read', fd)
             for fd in w:
-                self.events['write'][fd].callback()
+                self.callback('write', fd)
             for fd in e:
                 self.handle_error(fd)
             return True
@@ -193,9 +203,9 @@ class PollRegistrar(Registrar):
                 return kbint(self.signals)
             for fd,etype in items:
                 if contains(etype,select.POLLIN) and fd in self.events['read']:
-                    self.events['read'][fd].callback()
+                    self.callback('read', fd)
                 if contains(etype,select.POLLOUT) and fd in self.events['write']:
-                    self.events['write'][fd].callback()
+                    self.callback('write', fd)
                 if contains(etype,select.POLLERR) or contains(etype,select.POLLHUP):
                     self.handle_error(fd)
             return True

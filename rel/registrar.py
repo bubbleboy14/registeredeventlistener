@@ -42,14 +42,10 @@ class Registrar(object):
         return Event(self,callback,arg,evtype,handle)
 
     def read(self,sock,cb,*args):
-        tmp = SocketIO(self,'read',sock,cb,*args)
-        self.add(tmp)
-        return tmp
+        return SocketIO(self,'read',sock,cb,*args)
 
     def write(self,sock,cb,*args):
-        tmp = SocketIO(self,'write',sock,cb,*args)
-        self.add(tmp)
-        return tmp
+        return SocketIO(self,'write',sock,cb,*args)
 
     def dispatch(self):
         self.run_dispatch = True

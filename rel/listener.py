@@ -174,10 +174,10 @@ class Timer(object):
             return 1
         return 0
 
-    def check(self):
+    def check(self, t=None):
         if not self.pending():
             return False
-        if time.time() >= self.expiration:
+        if (t or time.time()) >= self.expiration:
             if self.cb(*self.args):
                 self.add(self.delay)
                 return True

@@ -1,6 +1,6 @@
 from listener import Event, SocketIO, Timer, Signal, contains
 from errors import AbortBranch
-import select, signal, time
+import select, signal, time, operator
 try:
     import epoll
 except ImportError:
@@ -19,7 +19,7 @@ def kbint(signals):
 class Registrar(object):
     def __init__(self):
         self.events = {'read':{},'write':{}}
-        self.timers = set()
+        self.timers = []
         self.addlist = []
         self.rmlist = []
         self.signals = {}
@@ -81,15 +81,18 @@ class Registrar(object):
         self.rmlist.append(timer)
 
     def check_timers(self):
+        changes = len(self.addlist) or len(self.rmlist)
         for timer in self.addlist:
-            self.timers.add(timer)
+            self.timers.append(timer)
         self.addlist = []
         for timer in self.rmlist:
             if timer in self.timers:
                 self.timers.remove(timer)
         self.rmlist = []
+        changes and self.timers.sort(key=operator.attrgetter("expiration"))
+        t = time.time()
         for timer in self.timers:
-            if not timer.check():
+            if not timer.check(t):
                 self.rmlist.append(timer)
         return bool(self.timers)
 

@@ -65,7 +65,7 @@ running = False
 registrar = None
 threader = None
 verbose = False
-supported_methods = ['pyevent','epoll','poll','kqueue','select']
+supported_methods = ['epoll','poll','kqueue','select','pyevent']
 
 mapping = {
     'select': SelectRegistrar,
@@ -142,7 +142,7 @@ def get_registrar(method):
 
 def initialize(methods=supported_methods,options=()):
     """
-    initialize(methods=['pyevent','epoll','poll','kqueue','select'],options=[])
+    initialize(methods=['epoll','poll','kqueue','select','pyevent'],options=[])
     possible options:
         'verbose' - prints out certain events
         'report' - prints status of non-pyevent registrar every 5 seconds

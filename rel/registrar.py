@@ -130,7 +130,10 @@ class KqueueRegistrar(Registrar):
     def remove(self, event):
         if event.fd in self.events[event.evtype]:
             del self.events[event.evtype][event.fd]
-            self.kq.control([select.kevent(event.fd, self.kqf[event.evtype], select.KQ_EV_DELETE)], 0)
+            try:
+                self.kq.control([select.kevent(event.fd, self.kqf[event.evtype], select.KQ_EV_DELETE)], 0)
+            except Exception,e:
+                pass #connection probably closed
     
     def check_events(self):
         if self.events['read'] or self.events['write']:

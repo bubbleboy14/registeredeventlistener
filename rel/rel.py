@@ -222,3 +222,14 @@ def init():
 def event(callback,arg=None,evtype=0,handle=None):
     check_init()
     return registrar.event(callback,arg,evtype,handle)
+
+def _thread_wrapper(callback):
+    from errors import AbortBranch
+    try:
+        callback()
+    except AbortBranch, e:
+        pass # we don't care at this point
+
+def thread(callback):
+    from thread import start_new_thread
+    start_new_thread(_thread_wrapper, (callback,))

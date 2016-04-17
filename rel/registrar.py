@@ -1,3 +1,4 @@
+from datetime import datetime
 from listener import Event, SocketIO, Timer, Signal, contains
 from errors import AbortBranch
 import select, signal, time, operator
@@ -23,6 +24,7 @@ class Registrar(object):
         self.addlist = []
         self.rmlist = []
         self.signals = {}
+        self.tick = 0
         self.run_dispatch = False
         self.error_check = False
 
@@ -55,6 +57,7 @@ class Registrar(object):
 
     def loop(self):
         time.sleep(SLEEP_SEC)
+        self.tick = datetime.now().microsecond
         e = self.check_events()
         t = self.check_timers()
         return e or t or self.signals

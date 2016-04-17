@@ -233,3 +233,7 @@ def _thread_wrapper(callback):
 def thread(callback):
     from thread import start_new_thread
     start_new_thread(_thread_wrapper, (callback,))
+
+def tick():
+    check_init()
+    return registrar.tick

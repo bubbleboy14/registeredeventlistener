@@ -94,7 +94,8 @@ class Registrar(object):
     def check_timers(self):
         changes = len(self.addlist) or len(self.rmlist)
         for timer in self.addlist:
-            self.timers.append(timer)
+            if timer not in self.timers:
+                self.timers.append(timer)
         self.addlist = []
         for timer in self.rmlist:
             if timer in self.timers:

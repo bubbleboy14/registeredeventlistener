@@ -201,6 +201,10 @@ def loop():
     check_init()
     registrar.loop()
 
+def report():
+    check_init()
+    return registrar.report()
+
 def abort():
     global running
     running = False

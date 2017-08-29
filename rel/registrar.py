@@ -28,6 +28,14 @@ class Registrar(object):
         self.run_dispatch = False
         self.error_check = False
 
+    def report(self):
+        return {
+            "timers": len(self.timers),
+            "signals": len(self.signals.keys()),
+            "reads": len(self.events.get("reads", {}).keys()),
+            "writes": len(self.events.get("writes", {}).keys())
+        }
+
     def signal_add(self, sig):
         self.signals[sig.sig] = sig
 

@@ -31,9 +31,9 @@ class Registrar(object):
     def report(self):
         return {
             "timers": len(self.timers),
-            "signals": len(self.signals.keys()),
-            "reads": len(self.events.get("reads", {}).keys()),
-            "writes": len(self.events.get("writes", {}).keys())
+            "signals": len(list(self.signals.keys())),
+            "reads": len(list(self.events.get("reads", {}).keys())),
+            "writes": len(list(self.events.get("writes", {}).keys()))
         }
 
     def signal_add(self, sig):
@@ -72,8 +72,8 @@ class Registrar(object):
 
     def abort(self):
         self.run_dispatch = False
-        for ev_list in self.events.values():
-            for sockio in ev_list.values():
+        for ev_list in list(self.events.values()):
+            for sockio in list(ev_list.values()):
                 sockio.delete()
 
     def abort_branch(self):
@@ -173,8 +173,8 @@ class SelectRegistrar(Registrar):
 
     def check_events(self):
         if self.events['read'] or self.events['write']:
-            rlist = self.events['read'].keys()
-            wlist = self.events['write'].keys()
+            rlist = list(self.events['read'].keys())
+            wlist = list(self.events['write'].keys())
             try:
                 r,w,e = select.select(rlist,wlist,rlist+wlist,LISTEN_SELECT)
             except select.error:

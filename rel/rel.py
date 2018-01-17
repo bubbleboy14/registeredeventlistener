@@ -26,7 +26,7 @@ def override():
         return
     class fakemodule(object):
         def __init__(self, **kwargs):
-            for key, val in kwargs.items():
+            for key, val in list(kwargs.items()):
                 setattr(self, key, val)
     pyevent_03_keys = [
         'EV_PERSIST',
@@ -228,14 +228,14 @@ def event(callback,arg=None,evtype=0,handle=None):
     return registrar.event(callback,arg,evtype,handle)
 
 def _thread_wrapper(callback):
-    from errors import AbortBranch
+    from .errors import AbortBranch
     try:
         callback()
     except AbortBranch as e:
         pass # we don't care at this point
 
 def thread(callback):
-    from thread import start_new_thread
+    from _thread import start_new_thread
     start_new_thread(_thread_wrapper, (callback,))
 
 def tick():

@@ -78,7 +78,7 @@ class SocketIO(object):
     def __repr__(self):
         cbname = self.cb.__name__
         if hasattr(self.cb,"im_class"):
-            cbname = self.cb.im_class.__name__ + "." + cbname
+            cbname = self.cb.__self__.__class__.__name__ + "." + cbname
         return '<SocketIO Object | Callback:"%s">'%cbname
 
     def persistent(self):
@@ -117,7 +117,7 @@ class Signal(object):
     def __repr__(self):
         cbname = self.cb.__name__
         if hasattr(self.cb,"im_class"):
-            cbname = self.cb.im_class.__name__ + "." + cbname
+            cbname = self.cb.__self__.__class__.__name__ + "." + cbname
         return '<Signal Object | Callback:"%s">'%cbname
 
     def add(self, delay=None):
@@ -155,7 +155,7 @@ class Timer(object):
     def __repr__(self):
         cbname = self.cb.__name__
         if hasattr(self.cb,"im_class"):
-            cbname = self.cb.im_class.__name__ + "." + cbname
+            cbname = self.cb.__self__.__class__.__name__ + "." + cbname
         return '<Timer Object | Callback:"%s">'%cbname
 
     def add(self, delay=None):

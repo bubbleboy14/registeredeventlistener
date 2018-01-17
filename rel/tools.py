@@ -6,8 +6,8 @@ import rel, commands
 ### helper functions
 
 def notice(*lines):
-    print ""
-    print "\n".join(lines)
+    print("")
+    print("\n".join(lines))
 
 def exit():
     notice("goodbye")

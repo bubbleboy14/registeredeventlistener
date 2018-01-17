@@ -1,6 +1,6 @@
 from datetime import datetime
-from listener import Event, SocketIO, Timer, Signal, contains
-from errors import AbortBranch
+from .listener import Event, SocketIO, Timer, Signal, contains
+from .errors import AbortBranch
 import select, signal, time, operator
 try:
     import epoll
@@ -111,7 +111,7 @@ class Registrar(object):
     def callback(self, etype, fd):
         try:
             self.events[etype][fd].callback()
-        except AbortBranch, e:
+        except AbortBranch as e:
             pass # just go on with other code :)
 
     def handle_error(self, fd):
@@ -124,7 +124,7 @@ class KqueueRegistrar(Registrar):
     def __init__(self):
         Registrar.__init__(self)
         if not hasattr(select, "kqueue"):
-            raise ImportError, "could not find kqueue -- need Python 2.6+ on BSD (including OSX)!"
+            raise ImportError("could not find kqueue -- need Python 2.6+ on BSD (including OSX)!")
         self.kq = select.kqueue()
         self.kqf = {
             "read": select.KQ_FILTER_READ,
@@ -144,7 +144,7 @@ class KqueueRegistrar(Registrar):
             del self.events[event.evtype][event.fd]
             try:
                 self.kq.control([select.kevent(event.fd, self.kqf[event.evtype], select.KQ_EV_DELETE)], 0)
-            except Exception,e:
+            except Exception as e:
                 pass #connection probably closed
     
     def check_events(self):
@@ -195,7 +195,7 @@ class PollRegistrar(Registrar):
             self.poll = select.poll()
         except AttributeError:
             # Probably a platform without poll support, such as Windows
-            raise ImportError, "could not import poll"
+            raise ImportError("could not import poll")
 
     def add(self, event):
         self.events[event.evtype][event.fd] = event
@@ -240,6 +240,6 @@ class PollRegistrar(Registrar):
 class EpollRegistrar(PollRegistrar):
     def __init__(self):
         if epoll is None:
-            raise ImportError, "could not import epoll"
+            raise ImportError("could not import epoll")
         Registrar.__init__(self)
         self.poll = epoll.poll()

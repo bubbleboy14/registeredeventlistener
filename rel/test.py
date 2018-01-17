@@ -18,14 +18,14 @@ Sample usage:
 
 """
 
-import rel
+from . import rel
 rel.override()
 
 import glob
 import os
 import signal
 import sys
-import thread
+import _thread
 import time
 import unittest
 
@@ -170,9 +170,9 @@ class EventTest(unittest.TestCase):
                 raise exc
             except:
                 pass
-        event.timeout(0, __raise_cb, StandardError())
+        event.timeout(0, __raise_cb, Exception())
         event.timeout(0, __raise_catch_cb, Exception())
-        self.assertRaises(StandardError, event.dispatch)
+        self.assertRaises(Exception, event.dispatch)
 
     def test_thread(self):
         self.call_back_ran_a = False
@@ -188,15 +188,15 @@ class EventTest(unittest.TestCase):
                 time.sleep(1)
                 d['count'] += 1
         d = {'count': 0}
-        thread.start_new_thread(__time_thread, (3, d))
+        _thread.start_new_thread(__time_thread, (3, d))
         event.timeout(4, __time_cb, d)
         event.dispatch()
         self.assertTrue(self.call_back_ran_a, 'call back a did not run')
         self.assertTrue(self.call_back_ran_b, 'call back b did not run')
 
 if __name__ == '__main__':
-    if raw_input("run these tests with select registrar? (y/N)").lower().startswith("y"):
+    if input("run these tests with select registrar? (y/N)").lower().startswith("y"):
         rel.initialize(['select'], ['verbose', 'strict'])
-    elif raw_input('verbose mode? (y/N)').lower().startswith('y'):
+    elif input('verbose mode? (y/N)').lower().startswith('y'):
         rel.initialize(options=['verbose'])
     unittest.main()

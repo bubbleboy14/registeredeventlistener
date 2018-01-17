@@ -14,8 +14,8 @@ functions:
     init()
 """
 import sys, threading, time, pprint
-from registrar import SelectRegistrar, PollRegistrar, EpollRegistrar, KqueueRegistrar
-from listener import EV_PERSIST, EV_READ, EV_SIGNAL, EV_TIMEOUT, EV_WRITE
+from .registrar import SelectRegistrar, PollRegistrar, EpollRegistrar, KqueueRegistrar
+from .listener import EV_PERSIST, EV_READ, EV_SIGNAL, EV_TIMEOUT, EV_WRITE
 try:
     import event as pyevent
 except ImportError:
@@ -26,7 +26,7 @@ def override():
         return
     class fakemodule(object):
         def __init__(self, **kwargs):
-            for key, val in kwargs.items():
+            for key, val in list(kwargs.items()):
                 setattr(self, key, val)
     pyevent_03_keys = [
         'EV_PERSIST',
@@ -76,20 +76,20 @@ mapping = {
 
 def _display(text):
     if verbose:
-        print "Registered Event Listener output:",text
+        print("Registered Event Listener output:", text)
 
 def __report():
-    print "=" * 60
-    print "rel status report".center(60)
-    print str(time.time()).center(60)
-    print "-" * 60
-    print "events".center(60)
+    print("=" * 60)
+    print("rel status report".center(60))
+    print(str(time.time()).center(60))
+    print("-" * 60)
+    print("events".center(60))
     pprint.pprint(registrar.events)
-    print "signals".center(60)
+    print("signals".center(60))
     pprint.pprint(registrar.signals)
-    print "timers".center(60)
+    print("timers".center(60))
     pprint.pprint(registrar.timers)
-    print "=" * 60
+    print("=" * 60)
     return True
 
 class Thread_Checker(object):
@@ -134,7 +134,7 @@ def check_init():
 def get_registrar(method):
     if method == 'pyevent':
         if not pyevent:
-            raise ImportError, "could not import event"
+            raise ImportError("could not import event")
         return pyevent
     if method in mapping:
         return mapping[method]()
@@ -164,7 +164,7 @@ def initialize(methods=supported_methods,options=()):
         except ImportError:
             _display('Could not import "%s"'%method)
     if registrar is None:
-        raise ImportError, "Could not import any of given methods: %s" % (methods,)
+        raise ImportError("Could not import any of given methods: %s" % (methods,))
     _display('Initialized with "%s"'%method)
     threader = Thread_Checker('threaded' in options)
     if "report" in options:
@@ -228,14 +228,14 @@ def event(callback,arg=None,evtype=0,handle=None):
     return registrar.event(callback,arg,evtype,handle)
 
 def _thread_wrapper(callback):
-    from errors import AbortBranch
+    from .errors import AbortBranch
     try:
         callback()
-    except AbortBranch, e:
+    except AbortBranch as e:
         pass # we don't care at this point
 
 def thread(callback):
-    from thread import start_new_thread
+    from _thread import start_new_thread
     start_new_thread(_thread_wrapper, (callback,))
 
 def tick():

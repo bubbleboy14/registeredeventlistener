@@ -1,6 +1,6 @@
 from datetime import datetime
-from listener import Event, SocketIO, Timer, Signal, contains
-from errors import AbortBranch
+from .listener import Event, SocketIO, Timer, Signal, contains
+from .errors import AbortBranch
 import select, signal, time, operator
 try:
     import epoll
@@ -31,9 +31,9 @@ class Registrar(object):
     def report(self):
         return {
             "timers": len(self.timers),
-            "signals": len(self.signals.keys()),
-            "reads": len(self.events.get("reads", {}).keys()),
-            "writes": len(self.events.get("writes", {}).keys())
+            "signals": len(list(self.signals.keys())),
+            "reads": len(list(self.events.get("reads", {}).keys())),
+            "writes": len(list(self.events.get("writes", {}).keys()))
         }
 
     def signal_add(self, sig):
@@ -72,8 +72,8 @@ class Registrar(object):
 
     def abort(self):
         self.run_dispatch = False
-        for ev_list in self.events.values():
-            for sockio in ev_list.values():
+        for ev_list in list(self.events.values()):
+            for sockio in list(ev_list.values()):
                 sockio.delete()
 
     def abort_branch(self):
@@ -111,7 +111,7 @@ class Registrar(object):
     def callback(self, etype, fd):
         try:
             self.events[etype][fd].callback()
-        except AbortBranch, e:
+        except AbortBranch as e:
             pass # just go on with other code :)
 
     def handle_error(self, fd):
@@ -124,7 +124,7 @@ class KqueueRegistrar(Registrar):
     def __init__(self):
         Registrar.__init__(self)
         if not hasattr(select, "kqueue"):
-            raise ImportError, "could not find kqueue -- need Python 2.6+ on BSD (including OSX)!"
+            raise ImportError("could not find kqueue -- need Python 2.6+ on BSD (including OSX)!")
         self.kq = select.kqueue()
         self.kqf = {
             "read": select.KQ_FILTER_READ,
@@ -144,7 +144,7 @@ class KqueueRegistrar(Registrar):
             del self.events[event.evtype][event.fd]
             try:
                 self.kq.control([select.kevent(event.fd, self.kqf[event.evtype], select.KQ_EV_DELETE)], 0)
-            except Exception,e:
+            except Exception as e:
                 pass #connection probably closed
     
     def check_events(self):
@@ -173,8 +173,8 @@ class SelectRegistrar(Registrar):
 
     def check_events(self):
         if self.events['read'] or self.events['write']:
-            rlist = self.events['read'].keys()
-            wlist = self.events['write'].keys()
+            rlist = list(self.events['read'].keys())
+            wlist = list(self.events['write'].keys())
             try:
                 r,w,e = select.select(rlist,wlist,rlist+wlist,LISTEN_SELECT)
             except select.error:
@@ -195,7 +195,7 @@ class PollRegistrar(Registrar):
             self.poll = select.poll()
         except AttributeError:
             # Probably a platform without poll support, such as Windows
-            raise ImportError, "could not import poll"
+            raise ImportError("could not import poll")
 
     def add(self, event):
         self.events[event.evtype][event.fd] = event
@@ -240,6 +240,6 @@ class PollRegistrar(Registrar):
 class EpollRegistrar(PollRegistrar):
     def __init__(self):
         if epoll is None:
-            raise ImportError, "could not import epoll"
+            raise ImportError("could not import epoll")
         Registrar.__init__(self)
         self.poll = epoll.poll()

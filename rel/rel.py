@@ -235,8 +235,7 @@ def _thread_wrapper(callback):
         pass # we don't care at this point
 
 def thread(callback):
-    from _thread import start_new_thread
-    start_new_thread(_thread_wrapper, (callback,))
+    threading.Thread(target=_thread_wrapper, args=(callback,)).start()
 
 def tick():
     check_init()

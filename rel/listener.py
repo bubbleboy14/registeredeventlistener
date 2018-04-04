@@ -94,6 +94,13 @@ class SocketIO(object):
         self.registrar.remove(self)
         self.active = 0
 
+    def dereference(self):
+        if self.pending():
+            self.delete()
+        self.cb = None
+        self.args = None
+        self.timeout.delete(True)
+
     def pending(self):
         return self.active
 
@@ -165,9 +172,12 @@ class Timer(object):
             self.expiration = time.time()+self.delay
             self.registrar.add_timer(self)
 
-    def delete(self):
+    def delete(self, dereference=False):
         self.expiration = None
         self.registrar.remove_timer(self)
+        if dereference:
+            self.cb = None
+            self.args = None
 
     def pending(self):
         if self.expiration:

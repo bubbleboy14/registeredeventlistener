@@ -1,7 +1,11 @@
 ### rel tools module.
 ### (mostly rel example code)
 
-import rel, subprocess
+import rel
+try:
+    from subprocess import getoutput # py3
+except:
+    from commands import getoutput # py2
 
 ### helper functions
 
@@ -43,7 +47,7 @@ class Timer(object):
         problem = "no sound file path specified"
         if self.mp3:
             import os
-            if "command not found" in subprocess.getoutput("mplayer"):
+            if "command not found" in getoutput("mplayer"):
                 self.mp3 = None
                 problem = "could not find mplayer!"
             elif not os.path.isfile(mp3):
@@ -81,7 +85,7 @@ class Timer(object):
     def alarm(self):
         notice("time's up!")
         if self.mp3:
-            subprocess.getoutput("mplayer %s"%(self.mp3,))
+            getoutput("mplayer %s"%(self.mp3,))
         self.stop()
 
 ### functions for interpreting command-line instructions

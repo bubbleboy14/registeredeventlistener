@@ -174,8 +174,15 @@ def initialize(methods=supported_methods,options=()):
             timeout(5,__report)
     return method
 
+SAFE_READ = False
+def safe_read():
+    global SAFE_READ
+    SAFE_READ = True
+
 def read(sock,cb,*args):
     check_init()
+    if SAFE_READ:
+        return registrar.read(sock,cb)
     return registrar.read(sock,cb,*args)
 
 def write(sock,cb,*args):

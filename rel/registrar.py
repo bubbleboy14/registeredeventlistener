@@ -10,7 +10,7 @@ except ImportError:
 LISTEN_KQUEUE = 0
 LISTEN_SELECT = 0#.001
 LISTEN_POLL = 0#10
-SLEEP_SEC = .00001
+SLEEP_SEC = .0003
 
 def kbint(signals):
     if signal.SIGINT in signals:

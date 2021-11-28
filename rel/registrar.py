@@ -12,6 +12,10 @@ LISTEN_SELECT = 0#.001
 LISTEN_POLL = 0#10
 SLEEP_SEC = .0003
 
+def set_sleep(s):
+    global SLEEP_SEC
+    SLEEP_SEC = s
+
 def kbint(signals):
     if signal.SIGINT in signals:
         return True

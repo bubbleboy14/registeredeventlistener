@@ -11,10 +11,15 @@ LISTEN_KQUEUE = 0
 LISTEN_SELECT = 0#.001
 LISTEN_POLL = 0#10
 SLEEP_SEC = .0003
+SLEEP_TURBO = .0000001
 
 def set_sleep(s):
     global SLEEP_SEC
     SLEEP_SEC = s
+
+def set_turbo(s):
+    global SLEEP_TURBO
+    SLEEP_TURBO = s
 
 def kbint(signals):
     if signal.SIGINT in signals:
@@ -36,8 +41,8 @@ class Registrar(object):
         return {
             "timers": len(self.timers),
             "signals": len(list(self.signals.keys())),
-            "reads": len(list(self.events.get("reads", {}).keys())),
-            "writes": len(list(self.events.get("writes", {}).keys()))
+            "reads": len(list(self.events["read"].keys())),
+            "writes": len(list(self.events["write"].keys()))
         }
 
     def signal_add(self, sig):
@@ -68,7 +73,10 @@ class Registrar(object):
                 self.run_dispatch = False
 
     def loop(self):
-        time.sleep(SLEEP_SEC)
+        if SLEEP_TURBO and len(list(self.events["write"].keys())):
+            time.sleep(SLEEP_TURBO)
+        else:
+            time.sleep(SLEEP_SEC)
         self.tick = datetime.now().microsecond
         e = self.check_events()
         t = self.check_timers()

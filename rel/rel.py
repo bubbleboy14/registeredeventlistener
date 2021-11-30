@@ -14,7 +14,7 @@ functions:
     init()
 """
 import sys, threading, time, pprint
-from .registrar import set_sleep, SelectRegistrar, PollRegistrar, EpollRegistrar, KqueueRegistrar
+from .registrar import set_sleep, set_turbo, SelectRegistrar, PollRegistrar, EpollRegistrar, KqueueRegistrar
 from .listener import EV_PERSIST, EV_READ, EV_SIGNAL, EV_TIMEOUT, EV_WRITE
 try:
     import event as pyevent

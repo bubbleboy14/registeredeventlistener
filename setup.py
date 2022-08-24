@@ -7,6 +7,8 @@ setup(
     author='Mario Balibrera',
     author_email='mario.balibrera@gmail.com',
     license='MIT License',
+    url="https://github.com/bubbleboy14/registeredeventlistener",
+    download_url='https://github.com/bubbleboy14/registeredeventlistener/releases',
     description='Registered Event Listener. Provides standard (pyevent) interface and functionality without external dependencies',
     long_description='Select preferred event notification methods with initialize([methods in order of preference]). If initialize(...) is not called, methods are tried in default order: pyevent,epoll,poll,kqueue,select.',
     packages=[

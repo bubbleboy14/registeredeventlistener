@@ -8,10 +8,10 @@ except ImportError:
     epoll = None
 
 LISTEN_KQUEUE = 0
-LISTEN_SELECT = 0#.001
-LISTEN_POLL = 0#10
-SLEEP_SEC = .0003
-SLEEP_TURBO = None
+LISTEN_SELECT = 0
+LISTEN_POLL = 0
+SLEEP_SEC = .03
+SLEEP_TURBO = 0.0001
 
 def set_sleep(s):
     global SLEEP_SEC
@@ -73,7 +73,7 @@ class Registrar(object):
                 self.run_dispatch = False
 
     def loop(self):
-        if SLEEP_TURBO and self.events["write"]:
+        if SLEEP_TURBO and self.events["write"] or self.events["read"]:
             time.sleep(SLEEP_TURBO)
         else:
             time.sleep(SLEEP_SEC)

@@ -16,9 +16,21 @@ timeout()), which utilize said instance.
 
 ### Examples
 Usage examples can be found throughout a rel-based asynchronous network library
-called [dez](https://github.com/bubbleboy14/dez).
+called [dez](https://github.com/bubbleboy14/dez). Note that since dez originally
+used pyevent, the rel functions are referenced throughout dez under the event
+module, e.g. event.dispatch() instead of rel.dispatch(). This all works out due
+to the dez [init file](https://github.com/bubbleboy14/dez/blob/master/dez/__init__.py) calling rel.override():
 
-One concise example is the SocketDaemon in the [server submodule](https://github.com/bubbleboy14/dez/blob/master/dez/network/server.py) of [dez.network](https://github.com/bubbleboy14/dez/tree/master/dez/network):
+    import rel
+    rel.override()
+
+This enables a pyevent-based application (such as dez) to instead run on rel
+without the need to change anything else. However, if this isn't your use case
+(converting a pyevent application), you can pretty much ignore this and use
+rel directly.
+
+Anyway, dez is full of rel example code. One concise example is the SocketDaemon
+in the [server submodule](https://github.com/bubbleboy14/dez/blob/master/dez/network/server.py) of [dez.network](https://github.com/bubbleboy14/dez/tree/master/dez/network):
 
     class SocketDaemon(object):
         def __init__(self, hostname, port, cb=None, b64=False, cbargs=[], certfile=None, keyfile=None, cacerts=None):

@@ -15,7 +15,7 @@ of the timeout(), signal(), and dispatch() functions:
 
 Similarly, Timer.stop() triggers rel.abort().
 
-### timeCLI
+### timerCLI
 This function contains an example of rel initialization,
 which is optional, but may be used to specify particular
 settings:

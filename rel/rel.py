@@ -1,8 +1,10 @@
 """
 R.E.L.
-Registed Event Listener
-module that uses various methods to emulate event-like behavior
-functions:
+Registed Event Listener is a pure-python implementation of [pyevent](https://github.com/jaraco/pyevent),
+which is a wrapper around [libevent](http://monkey.org/~provos/libevent/), providing an identical interface
+without the need to compile C code, and without breaking the GIL / threading.
+
+### basic functions:
     read(socket, callback, *args)
     write(socket, callback, *args)
     timeout(delay, callback, *args)
@@ -11,8 +13,29 @@ functions:
     dispatch()
     loop()
     abort()
+    abort_branch() (non-pyevent only)
+    thread()
     init()
+
+### registrars
+rel will use the fastest registrar available on your system:
+
+    supported_methods = ['epoll','poll','kqueue','select','pyevent']
+
+The supported_methods[] registrar priority list, as well as other
+settings, can be altered using the (optional) initialize() function:
+
+### initialize(methods=supported_methods,options=()) - possible options:
+    'verbose' - prints out certain events
+    'report' - prints status of non-pyevent registrar every 5 seconds
+    'strict' - ONLY try specified methods
+    'threaded' - enable GIL hack -- pyevent only!
+
+### override()
+This override function can be used to seamlessly swap rel into
+a pyevent application.
 """
+
 import sys, threading, time, pprint
 from .registrar import set_sleep, set_turbo, SelectRegistrar, PollRegistrar, EpollRegistrar, KqueueRegistrar
 from .listener import EV_PERSIST, EV_READ, EV_SIGNAL, EV_TIMEOUT, EV_WRITE

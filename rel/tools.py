@@ -1,3 +1,29 @@
+"""
+This module contains a single tool (Timer) and a
+CLI wrapper (timerCLI()).
+
+### Timer
+Timer's start() function contains basic usage examples
+of the timeout(), signal(), and dispatch() functions:
+
+    def start(self):
+        self.count = 0
+        notice("starting countdown to %s"%(self.goal,))
+        rel.timeout(1, self.update)
+        rel.signal(2, self.stop)
+        rel.dispatch()
+
+Similarly, Timer.stop() triggers rel.abort().
+
+### timeCLI
+This function contains an example of rel initialization,
+which is optional, but may be used to specify particular
+settings:
+
+    if options.verbose:
+        rel.initialize(options=["verbose"])
+"""
+
 ### rel tools module.
 ### (mostly rel example code)
 

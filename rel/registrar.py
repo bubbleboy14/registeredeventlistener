@@ -1,3 +1,56 @@
+"""
+This module includes the Registrar class and four subclasses,
+KqueueRegistrar, SelectRegistrar, PollRegistrar, and EpollRegistrar,
+each of which utilizes a different subsystem (kqueue, select, poll,
+or epoll) to manage read and write events. Registrar and its subclasses
+also manage signals and timers.
+
+### Reads and Writes
+Reads and writes are handled by the SocketIO class defined in the
+listener module, which is instantiated by a couple Registrar functions:
+
+    def read(self,sock,cb,*args):
+        return SocketIO(self,'read',sock,cb,*args)
+
+    def write(self,sock,cb,*args):
+        return SocketIO(self,'write',sock,cb,*args)
+
+### Signals and Timers
+Signals and timers are handled by the Signal and Timer classes
+defined in the listener module, which can be instantiated through
+a couple Registrar functions:
+
+    def signal(self,sig,cb,*args):
+        return Signal(self,sig,cb,*args)
+
+    def timeout(self,delay,cb,*args):
+        return Timer(self,delay,cb,*args)
+
+The Registrar API is taken from [pyevent](https://github.com/jaraco/pyevent),
+which is a wrapper around [libevent](http://monkey.org/~provos/libevent/).
+
+Note that while rel can be configured to use pyevent under the hood
+(instead of one of the Registrar subclasses), such usage forfeits
+various benefits of the pure-Python Registrar subclasses, including
+GIL integration / thread compatibility.
+
+### Event Engine Rates
+Another benefit of the pure-Python Registrar subclasses (wrapping epoll,
+poll, kqueue, and select - by default, rel uses the fastest available) is
+that they run at configurable rates. By default, rel's CPU footprint is
+unnoticeably tiny unless it's currently managing active writes, in which
+case it ramps up to push the bytes through faster. These rates (normal
+and turbo) can be adjusted with a couple functions:
+
+    def set_sleep(s):
+        global SLEEP_SEC
+        SLEEP_SEC = s
+
+    def set_turbo(s):
+        global SLEEP_TURBO
+        SLEEP_TURBO = s
+"""
+
 from datetime import datetime
 from .listener import Event, SocketIO, Timer, Signal, contains
 from .errors import AbortBranch

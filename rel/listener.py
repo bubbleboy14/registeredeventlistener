@@ -1,3 +1,22 @@
+"""
+This module includes four classes: Event, SocketIO, Signal, and Timer.
+
+### Event
+This class uses a Registrar subclass instance to manage read, write,
+signal, and timeout events.
+
+### SocketIO
+This class uses a Registrar subclass instance to manage read, and
+write events.
+
+### Signal
+This class uses the signal library and a Registrar subclass instance
+to manage signal events.
+
+### Timer
+This class uses a Registrar subclass to manage timer events.
+"""
+
 import time
 import signal
 

@@ -17,7 +17,78 @@ subclass, as well as user-facing functions (such as read(), write(), signal(), a
 timeout()), which utilize said instance.
 
 ### Examples
-For usage examples, see [dez](https://github.com/bubbleboy14/dez), a rel-based asynchronous network library.
+Usage examples can be found throughout a rel-based asynchronous network library
+called [dez](https://github.com/bubbleboy14/dez).
+
+One concise example is the SocketDaemon in the [server submodule](https://github.com/bubbleboy14/dez/blob/master/dez/network/server.py) of [dez.network](https://github.com/bubbleboy14/dez/tree/master/dez/network):
+
+    class SocketDaemon(object):
+        def __init__(self, hostname, port, cb=None, b64=False, cbargs=[], certfile=None, keyfile=None, cacerts=None):
+            self.log = default_get_logger("SocketDaemon")
+            self.hostname = hostname
+            self.port = port
+            self.sock = io.server_socket(self.port, certfile, keyfile, cacerts)
+            self.cb = cb
+            self.cbargs = cbargs
+            self.b64 = b64
+            self.secure = bool(certfile)
+            self.listen = event.read(self.sock, self.accept_connection)
+
+        def handshake_cb(self, sock, addr):
+            def cb():
+                conn = Connection(addr, sock, b64=self.b64)
+                if self.cb:
+                    self.cb(conn, *self.cbargs)
+            return cb
+
+        def accept_connection(self):
+            try:
+                sock, addr = self.sock.accept()
+                cb = self.handshake_cb(sock, addr)
+                if self.secure:
+                    io.ssl_handshake(sock, cb)
+                    return True
+            except io.socket.error as e:
+                self.log.info("abandoning connection on socket error: %s"%(e,))
+                return True
+            cb()
+            return True
+
+        def start(self):
+            event.signal(2, event.abort)
+            event.dispatch()
+
+Another short example, also in [dez.network](https://github.com/bubbleboy14/dez/tree/master/dez/network), is to be found in the [controller submodule](https://github.com/bubbleboy14/dez/blob/master/dez/network/controller.py):
+
+    class SocketController(object):
+        def __init__(self):
+            self.daemons = {}
+
+        def register_address(self, hostname, port, callback=None, cbargs=[], b64=False, daemon="socket", dclass=None):
+            d = self.daemons.get((hostname, port))
+            if d:
+                d.cb = callback
+                d.cbargs = cbargs
+            else:
+                dclass = dclass and daemon_wrapper(dclass) or heads[daemon]
+                d = dclass(hostname, port, callback, b64, cbargs=cbargs)
+                self.daemons[(hostname, port)] = d
+            return d
+
+        def _abort(self):
+            if self.onstop:
+                self.onstop()
+            event.abort()
+
+        def start(self, onstop=False):
+            if not self.daemons:
+                print("SocketController doesn't know where to listen. Use register_address(hostname, port, callback) to register server addresses.")
+                return
+            self.onstop = onstop
+            event.signal(2, self._abort)
+            event.dispatch()
+
+Other brief examples are sprinkled throughout [dez.http](https://github.com/bubbleboy14/dez/tree/master/dez/http), including in [HTTPApplication](https://github.com/bubbleboy14/dez/blob/master/dez/http/application.py), [Shield](https://github.com/bubbleboy14/dez/blob/master/dez/http/server/shield.py), [fetch](https://github.com/bubbleboy14/dez/blob/master/dez/http/fetch.py), [inotify](https://github.com/bubbleboy14/dez/blob/master/dez/http/inotify.py), and elsewhere.
 
 ## registrar.py
 

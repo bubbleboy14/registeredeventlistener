@@ -113,6 +113,26 @@ settings:
     if options.verbose:
         rel.initialize(options=["verbose"])
 
+### usage
+
+    rtimer [seconds] [minutes] [hours] [update_increment]
+
+All arguments default to zero. So:
+
+    rtimer 15 30 2 60
+
+means run for 15 seconds, 30 minutes, and 2 hours, printing
+a notice every 60 seconds.
+
+    rtimer 0 5
+
+means run for 5 minutes, printing no incremental updates.
+
+When the time runs out, a sound will play on two conditions:
+there is a readable file at the specified path (configurable
+via the -m flag, with default: /var/local/rtimer_elapsed.mp3),
+and mplayer is installed.
+
 ## listener.py
 
 This module includes four classes: Event, SocketIO, Signal, and Timer.

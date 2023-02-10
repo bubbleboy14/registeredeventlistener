@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: us-ascii -*-
-# vim:ts=4:sw=4:softtabstop=4:smarttab:expandtab
-#
 """
 REL Test Suite - regular unittest compatible suite
 Submitted by Chris Clark on 10/12/2011. Thanks, Chris!
@@ -15,7 +11,6 @@ Sample usage:
     rel\test.py -v
     rel\test.py -v EventTest.test_exception EventTest.test_timeout
     ... etc.
-
 """
 
 from . import rel

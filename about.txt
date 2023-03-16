@@ -13,8 +13,8 @@ of these classes are managed by the Registrar subclasses (defined in the registr
 module).
 
 The core rel module contains functions for selecting and initializing a Registrar
-subclass, as well as user-facing functions (such as read(), write(), signal(), and
-timeout()), which utilize said instance.
+subclass, as well as user-facing functions (such as `read()`, `write()`, `signal()`, and
+`timeout()`), which utilize said instance.
 
 ### Examples
 One of the most common usage patterns consists of calling a function on an interval,
@@ -68,13 +68,13 @@ To see this in action, install cantools and type in the command line:
 
     ctutil admin memcreep
 
-This calls the memcreep() function, which instantiates a Creeper. The Creeper
-constructor calls start(), which: 1) tells rel (via signal()) to abort() on
-a KeyBoardInterrupt (operator presses CTR-C); 2) tells rel (via timeout()) to
-call the creep() function every second; and 3) starts (via dispatch()) the
+This calls the `memcreep()` function, which instantiates a Creeper. The Creeper
+constructor calls `start()`, which: 1) tells rel (via `signal()`) to abort() on
+a KeyBoardInterrupt (operator presses CTR-C); 2) tells rel (via `timeout()`) to
+call the `creep()` function every second; and 3) starts (via `dispatch()`) the
 microevent engine.
 
-The creep() function analyzes (via the calc() function) memory usage, and
+The `creep()` function analyzes (via the `calc()` function) memory usage, and
 returns True, which tells rel to keep calling it. The cantools [cron](https://github.com/bubbleboy14/cantools/blob/master/cantools/web/dez_server/cron.py) module
 essentially functions the same way.
 
@@ -88,7 +88,7 @@ The cantools [util module](https://github.com/bubbleboy14/cantools/blob/master/c
         if config.rel.turbo:
             rel.set_turbo(config.rel.turbo)
 
-Here, set_sleep() and set_turbo() are used to adjust the SLEEP_SEC and SLEEP_TURBO
+Here, `set_sleep()` and `set_turbo()` are used to adjust the SLEEP_SEC and SLEEP_TURBO
 values, the defaults of which may be found in the rel [registrar](https://github.com/bubbleboy14/registeredeventlistener/blob/master/rel/registrar.py) module:
 
     SLEEP_SEC = .03
@@ -99,8 +99,8 @@ SLEEP_TURBO is used whenever the engine is managing active write events.
 More usage examples can be found throughout a rel-based asynchronous network library
 called [dez](https://github.com/bubbleboy14/dez). Note that since dez originally
 used pyevent, the rel functions are referenced throughout dez under the event
-module, e.g. event.dispatch() instead of rel.dispatch(). This all works out due
-to the dez [init file](https://github.com/bubbleboy14/dez/blob/master/dez/__init__.py) calling rel.override():
+module, e.g. `event.dispatch()` instead of `rel.dispatch()`. This all works out due
+to the dez [init file](https://github.com/bubbleboy14/dez/blob/master/dez/__init__.py) calling `rel.override()`:
 
     import rel
     rel.override()

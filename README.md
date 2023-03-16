@@ -22,7 +22,7 @@ subclass, as well as user-facing functions (such as `read()`, `write()`, `signal
 One of the most common usage patterns consists of calling a function on an interval,
 stopping only once the function fails to return True. This is done with the `rel.timeout()`
 function - one simple example can be found in the [admin module](https://github.com/bubbleboy14/cantools/blob/master/cantools/util/admin.py) of the [util subsystem](https://github.com/bubbleboy14/cantools/tree/master/cantools/util)
-of the [cantools](https://github.com/bubbleboy14/cantools/tree/master/cantools) web framework:
+of the [cantools](https://github.com/bubbleboy14/cantools) web framework:
 
     class Creeper(object):
         def __init__(self):

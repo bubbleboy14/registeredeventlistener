@@ -17,7 +17,86 @@ subclass, as well as user-facing functions (such as read(), write(), signal(), a
 timeout()), which utilize said instance.
 
 ### Examples
-Usage examples can be found throughout a rel-based asynchronous network library
+One of the most common usage patterns consists of calling a function on an interval,
+stopping only once the function fails to return True. This is done with the `rel.timeout()`
+function - one simple example can be found in the [admin module](https://github.com/bubbleboy14/cantools/blob/master/cantools/util/admin.py) of the [util subsystem](https://github.com/bubbleboy14/cantools/tree/master/cantools/util)
+of the [cantools](https://github.com/bubbleboy14/cantools/tree/master/cantools) web framework:
+
+    class Creeper(object):
+        def __init__(self):
+            self.last = None
+            self.diffs = []
+            self.start()
+
+        def signed(self, num):
+            return num < 0 and num or "+%s"%(num,)
+
+        def pad(self, s, target=12):
+            ls = len(s)
+            if ls < target:
+                return "%s%s"%(s, " " * (target - ls))
+            return s
+
+        def calc(self, diff):
+            dz = self.diffs
+            dz.append(diff)
+            if len(dz) > 10:
+                dz.pop(0)
+            dl = len(dz)
+            line = self.pad("diff: %s"%(self.signed(diff),))
+            if dl > 1:
+                return "%s ; %s-sec average: %s"%(line, dl, self.signed(sum(dz) / dl))
+            return line
+
+        def creep(self):
+            current = int(output("free | grep Mem | awk '{print $3}'", True))
+            if self.last:
+                log(self.calc(current - self.last))
+            self.last = current
+            return True
+
+        def start(self):
+            import rel
+            rel.signal(2, rel.abort)
+            rel.timeout(1, self.creep)
+            rel.dispatch()
+
+    def memcreep():
+        Creeper()
+
+To see this in action, install cantools and type in the command line:
+
+    ctutil admin memcreep
+
+This calls the memcreep() function, which instantiates a Creeper. The Creeper
+constructor calls start(), which: 1) tells rel (via signal()) to abort() on
+a KeyBoardInterrupt (operator presses CTR-C); 2) tells rel (via timeout()) to
+call the creep() function every second; and 3) starts (via dispatch()) the
+microevent engine.
+
+The creep() function analyzes (via the calc() function) memory usage, and
+returns True, which tells rel to keep calling it. The cantools [cron](https://github.com/bubbleboy14/cantools/blob/master/cantools/web/dez_server/cron.py) module
+essentially functions the same way.
+
+The cantools [util module](https://github.com/bubbleboy14/cantools/blob/master/cantools/util/__init__.py) also has a good example of adjusting engine rates:
+
+    def init_rel():
+        import rel
+        from cantools import config
+        if config.rel.sleep:
+            rel.set_sleep(config.rel.sleep)
+        if config.rel.turbo:
+            rel.set_turbo(config.rel.turbo)
+
+Here, set_sleep() and set_turbo() are used to adjust the SLEEP_SEC and SLEEP_TURBO
+values, the defaults of which may be found in the rel [registrar](https://github.com/bubbleboy14/registeredeventlistener/blob/master/rel/registrar.py) module:
+
+    SLEEP_SEC = .03
+    SLEEP_TURBO = 0.0001
+
+SLEEP_TURBO is used whenever the engine is managing active write events.
+
+More usage examples can be found throughout a rel-based asynchronous network library
 called [dez](https://github.com/bubbleboy14/dez). Note that since dez originally
 used pyevent, the rel functions are referenced throughout dez under the event
 module, e.g. event.dispatch() instead of rel.dispatch(). This all works out due

@@ -71,7 +71,7 @@ To see this in action, install cantools and type in the command line:
     ctutil admin memcreep
 
 This calls the `memcreep()` function, which instantiates a Creeper. The Creeper
-constructor calls `start()`, which: 1) tells rel (via `signal()`) to abort() on
+constructor calls `start()`, which: 1) tells rel (via `signal()`) to `abort()` on
 a KeyBoardInterrupt (operator presses CTR-C); 2) tells rel (via `timeout()`) to
 call the `creep()` function every second; and 3) starts (via `dispatch()`) the
 microevent engine.

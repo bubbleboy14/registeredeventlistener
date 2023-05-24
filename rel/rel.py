@@ -235,6 +235,9 @@ def report():
     check_init()
     return registrar.report()
 
+def is_running():
+    return running
+
 def abort():
     global running
     running = False

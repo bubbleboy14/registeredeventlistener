@@ -58,7 +58,7 @@ def notice(*lines):
 
 def exit():
     notice("goodbye")
-    if rel.running:
+    if rel.is_running():
         rel.abort()
     else:
         import sys

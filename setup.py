@@ -1,9 +1,9 @@
-from rel.version import __version__
+#from rel.version import __version__
 from setuptools import setup
 
 setup(
     name='rel',
-    version=__version__,
+    version='0.4.9',
     author='Mario Balibrera',
     author_email='mario.balibrera@gmail.com',
     license='MIT License',

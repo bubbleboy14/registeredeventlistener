@@ -94,15 +94,18 @@ class Timer(object):
                 self.mp3 = None
                 problem = "could not find mplayer!"
             elif not os.path.isfile(mp3):
-                self.mp3 = None
-                problem = "could not access sound file at %s -- no such file"%(mp3,)
-            else:
+                notice("mp3 not found - checking for mp4")
+                self.mp3 = mp3.replace(".mp3", ".mp4")
+                if not os.path.isfile(self.mp3):
+                    self.mp3 = None
+                    problem = "could not access sound file at %s -- no such file"%(mp3,)
+            if self.mp3:
                 try:
-                    f = open(mp3)
+                    f = open(self.mp3)
                     f.close()
                 except:
                     self.mp3 = None
-                    problem = "could not access sound file at %s -- permission denied"%(mp3,)
+                    problem = "could not access sound file at %s -- permission denied"%(self.mp3,)
         if not self.mp3:
             notice("sound disabled", problem)
 

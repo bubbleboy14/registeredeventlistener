@@ -123,7 +123,7 @@ class Timer(object):
     def update(self):
         self.count += 1
         if self.interval and not self.count % self.interval:
-            notice("count: %s. goal: %s. completed: %s%%."%(self.count, self.goal, str(self.count/float(self.goal))[:5]))
+            notice("count: %s. goal: %s. completed: %s%%."%(self.count, self.goal, str(100 * self.count/float(self.goal))[:5]))
         if self.count == self.goal:
             self.alarm()
         return True

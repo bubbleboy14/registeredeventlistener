@@ -273,3 +273,14 @@ def thread(callback):
 def tick():
     check_init()
     return registrar.tick
+
+def start():
+    signal(2, abort)
+    dispatch()
+
+def stop():
+    _display("goodbye")
+    if is_running():
+        abort()
+    else:
+        sys.exit()

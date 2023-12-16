@@ -7,7 +7,7 @@ Install rel with pip:
 
     pip3 install rel
 
-Current version: [0.4.9](https://pypi.org/project/rel/)
+Current version: [0.4.9.1](https://pypi.org/project/rel/)
 
 ### Basic Structure
 The listener module contains classes for handling individual events. Instances
@@ -183,6 +183,79 @@ Another short example, also in [dez.network](https://github.com/bubbleboy14/dez/
 
 Other brief examples are sprinkled throughout [dez.http](https://github.com/bubbleboy14/dez/tree/master/dez/http), including in [HTTPApplication](https://github.com/bubbleboy14/dez/blob/master/dez/http/application.py), [Shield](https://github.com/bubbleboy14/dez/blob/master/dez/http/server/shield.py), [fetch](https://github.com/bubbleboy14/dez/blob/master/dez/http/fetch.py), [inotify](https://github.com/bubbleboy14/dez/blob/master/dez/http/inotify.py), and elsewhere.
 
+
+## test.py
+
+REL Test Suite - regular unittest compatible suite
+Submitted by Chris Clark on 10/12/2011. Thanks, Chris!
+
+Original code here:
+http://code.google.com/r/clach04-pyeventtestfixes/source/browse/test.py
+
+Sample usage:
+
+    rel\test.py
+    rel\test.py -v
+    rel\test.py -v EventTest.test_exception EventTest.test_timeout
+    ... etc.
+
+## rel.py
+
+R.E.L.
+Registed Event Listener is a pure-python implementation of [pyevent](https://github.com/jaraco/pyevent),
+which is a wrapper around [libevent](http://monkey.org/~provos/libevent/), providing an identical interface
+without the need to compile C code, and without breaking the GIL / threading.
+
+### basic functions:
+    read(socket, callback, *args)
+    write(socket, callback, *args)
+    timeout(delay, callback, *args)
+    signal(sig, callback, *args)
+    event(callback,arg=None,evtype=0,handle=None)
+    dispatch()
+    loop()
+    abort()
+    abort_branch() (non-pyevent only)
+    thread()
+    init()
+
+### registrars
+rel will use the fastest registrar available on your system:
+
+    supported_methods = ['epoll','poll','kqueue','select','pyevent']
+
+The supported_methods[] registrar priority list, as well as other
+settings, can be altered using the (optional) initialize() function:
+
+### initialize(methods=supported_methods,options=()) - possible options:
+    'verbose' - prints out certain events
+    'report' - prints status of non-pyevent registrar every 5 seconds
+    'strict' - ONLY try specified methods
+    'threaded' - enable GIL hack -- pyevent only!
+
+### override()
+This override function can be used to seamlessly swap rel into
+a pyevent application.
+
+## listener.py
+
+This module includes four classes: Event, SocketIO, Signal, and Timer.
+
+### Event
+This class uses a Registrar subclass instance to manage read, write,
+signal, and timeout events.
+
+### SocketIO
+This class uses a Registrar subclass instance to manage read, and
+write events.
+
+### Signal
+This class uses the signal library and a Registrar subclass instance
+to manage signal events.
+
+### Timer
+This class uses a Registrar subclass to manage timer events.
+
 ## registrar.py
 
 This module includes the Registrar class and four subclasses,
@@ -236,21 +309,6 @@ and turbo) can be adjusted with a couple functions:
         global SLEEP_TURBO
         SLEEP_TURBO = s
 
-## test.py
-
-REL Test Suite - regular unittest compatible suite
-Submitted by Chris Clark on 10/12/2011. Thanks, Chris!
-
-Original code here:
-http://code.google.com/r/clach04-pyeventtestfixes/source/browse/test.py
-
-Sample usage:
-
-    rel\test.py
-    rel\test.py -v
-    rel\test.py -v EventTest.test_exception EventTest.test_timeout
-    ... etc.
-
 ## tools.py
 
 This module contains a single tool (Timer) and a
@@ -296,60 +354,3 @@ When the time runs out, a sound will play on two conditions:
 there is a readable file at the specified path (configurable
 via the -m flag, with default: /var/local/rtimer_elapsed.mp3),
 and mplayer is installed.
-
-## listener.py
-
-This module includes four classes: Event, SocketIO, Signal, and Timer.
-
-### Event
-This class uses a Registrar subclass instance to manage read, write,
-signal, and timeout events.
-
-### SocketIO
-This class uses a Registrar subclass instance to manage read, and
-write events.
-
-### Signal
-This class uses the signal library and a Registrar subclass instance
-to manage signal events.
-
-### Timer
-This class uses a Registrar subclass to manage timer events.
-
-## rel.py
-
-R.E.L.
-Registed Event Listener is a pure-python implementation of [pyevent](https://github.com/jaraco/pyevent),
-which is a wrapper around [libevent](http://monkey.org/~provos/libevent/), providing an identical interface
-without the need to compile C code, and without breaking the GIL / threading.
-
-### basic functions:
-    read(socket, callback, *args)
-    write(socket, callback, *args)
-    timeout(delay, callback, *args)
-    signal(sig, callback, *args)
-    event(callback,arg=None,evtype=0,handle=None)
-    dispatch()
-    loop()
-    abort()
-    abort_branch() (non-pyevent only)
-    thread()
-    init()
-
-### registrars
-rel will use the fastest registrar available on your system:
-
-    supported_methods = ['epoll','poll','kqueue','select','pyevent']
-
-The supported_methods[] registrar priority list, as well as other
-settings, can be altered using the (optional) initialize() function:
-
-### initialize(methods=supported_methods,options=()) - possible options:
-    'verbose' - prints out certain events
-    'report' - prints status of non-pyevent registrar every 5 seconds
-    'strict' - ONLY try specified methods
-    'threaded' - enable GIL hack -- pyevent only!
-
-### override()
-This override function can be used to seamlessly swap rel into
-a pyevent application.

@@ -56,7 +56,7 @@ from .listener import Event, SocketIO, Timer, Signal, contains
 from .errors import AbortBranch
 import select, signal, time, operator
 try:
-    import epoll
+    from select import epoll
 except ImportError:
     epoll = None
 
@@ -278,8 +278,6 @@ class PollRegistrar(Registrar):
                 items = self.poll.poll(LISTEN_POLL)
             except select.error:
                 return kbint(self.signals)
-            except epoll.error:
-                return kbint(self.signals)
             for fd,etype in items:
                 if contains(etype,select.POLLIN) and fd in self.events['read']:
                     self.callback('read', fd)
@@ -299,7 +297,7 @@ class PollRegistrar(Registrar):
         if mode:
             try:
                 self.poll.register(fd, mode)
-            except epoll.error:
+            except select.error:
                 pass
 
 class EpollRegistrar(PollRegistrar):
@@ -307,4 +305,4 @@ class EpollRegistrar(PollRegistrar):
         if epoll is None:
             raise ImportError("could not import epoll")
         Registrar.__init__(self)
-        self.poll = epoll.poll()
+        self.poll = epoll()

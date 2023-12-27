@@ -65,7 +65,7 @@ LISTEN_SELECT = 0
 LISTEN_POLL = 0
 SLEEP_SEC = .03
 SLEEP_TURBO = 0.0001
-SEL_MAX_FD = 512
+SEL_MAX_FD = 256
 
 def set_sleep(s):
     global SLEEP_SEC

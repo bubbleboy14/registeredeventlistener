@@ -65,6 +65,7 @@ LISTEN_SELECT = 0
 LISTEN_POLL = 0
 SLEEP_SEC = .03
 SLEEP_TURBO = 0.0001
+SEL_MAX_FD = 512
 
 def set_sleep(s):
     global SLEEP_SEC
@@ -236,22 +237,31 @@ class SelectRegistrar(Registrar):
         if event.fd in self.events[event.evtype]:
             del self.events[event.evtype][event.fd]
 
+    def do_check(self, rlist, wlist):
+        try:
+            r,w,e = select.select(rlist,wlist,rlist+wlist,LISTEN_SELECT)
+        except select.error:
+            return kbint(self.signals)
+        for fd in r:
+            self.callback('read', fd)
+        for fd in w:
+            self.callback('write', fd)
+        for fd in e:
+            self.handle_error(fd)
+        return True
+
     def check_events(self):
+        success = False
         if self.events['read'] or self.events['write']:
             rlist = list(self.events['read'].keys())
             wlist = list(self.events['write'].keys())
-            try:
-                r,w,e = select.select(rlist,wlist,rlist+wlist,LISTEN_SELECT)
-            except select.error:
-                return kbint(self.signals)
-            for fd in r:
-                self.callback('read', fd)
-            for fd in w:
-                self.callback('write', fd)
-            for fd in e:
-                self.handle_error(fd)
-            return True
-        return False
+            longest = max(len(rlist), len(wlist))
+            s = 0
+            while s < longest:
+                e = s + SEL_MAX_FD
+                success = self.do_check(self, rlist[s:e], wlist[s:e]) or success
+                s = e
+        return success
 
 class PollRegistrar(Registrar):
     def __init__(self):

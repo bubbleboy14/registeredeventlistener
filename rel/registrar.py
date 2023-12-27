@@ -259,7 +259,7 @@ class SelectRegistrar(Registrar):
             s = 0
             while s < longest:
                 e = s + SEL_MAX_FD
-                success = self.do_check(self, rlist[s:e], wlist[s:e]) or success
+                success = self.do_check(rlist[s:e], wlist[s:e]) or success
                 s = e
         return success
 

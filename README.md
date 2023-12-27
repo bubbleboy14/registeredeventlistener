@@ -7,7 +7,7 @@ Install rel with pip:
 
     pip3 install rel
 
-Current version: [0.4.9.2](https://pypi.org/project/rel/)
+Current version: [0.4.9.3](https://pypi.org/project/rel/)
 
 ### Basic Structure
 The listener module contains classes for handling individual events. Instances
@@ -222,7 +222,7 @@ without the need to compile C code, and without breaking the GIL / threading.
 ### registrars
 rel will use the fastest registrar available on your system:
 
-    supported_methods = ['epoll','poll','kqueue','select','pyevent']
+    supported_methods = ['poll','kqueue','select','epoll','pyevent']
 
 The supported_methods[] registrar priority list, as well as other
 settings, can be altered using the (optional) initialize() function:

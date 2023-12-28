@@ -279,7 +279,10 @@ class PollRegistrar(Registrar):
     def remove(self, event):
         if event.fd in self.events[event.evtype]:
             del self.events[event.evtype][event.fd]
-            self.poll.unregister(event.fd)
+            try:
+                self.poll.unregister(event.fd)
+            except OSError:
+                pass # this shouldn't happen....
             self.register(event.fd)
 
     def check_events(self):
@@ -307,7 +310,7 @@ class PollRegistrar(Registrar):
         if mode:
             try:
                 self.poll.register(fd, mode)
-            except select.error as e:
+            except select.error:
                 self.poll.modify(fd, mode)
 
 class EpollRegistrar(PollRegistrar):

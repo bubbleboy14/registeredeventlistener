@@ -20,7 +20,7 @@ without the need to compile C code, and without breaking the GIL / threading.
 ### registrars
 rel will use the fastest registrar available on your system:
 
-    supported_methods = ['poll','kqueue','select','epoll','pyevent']
+    supported_methods = ['epoll','kqueue','poll','select','pyevent']
 
 The supported_methods[] registrar priority list, as well as other
 settings, can be altered using the (optional) initialize() function:
@@ -88,7 +88,7 @@ running = False
 registrar = None
 threader = None
 verbose = False
-supported_methods = ['poll','kqueue','select','epoll','pyevent']
+supported_methods = ['epoll','kqueue','poll','select','pyevent']
 
 mapping = {
     'select': SelectRegistrar,
@@ -165,7 +165,7 @@ def get_registrar(method):
 
 def initialize(methods=supported_methods,options=()):
     """
-    initialize(methods=['poll','kqueue','select','epoll','pyevent'],options=[])
+    initialize(methods=['epoll','kqueue','poll','select','pyevent'],options=[])
     possible options:
         'verbose' - prints out certain events
         'report' - prints status of non-pyevent registrar every 5 seconds
@@ -192,7 +192,7 @@ def initialize(methods=supported_methods,options=()):
     threader = Thread_Checker('threaded' in options)
     if "report" in options:
         if registrar == pyevent:
-            _display('Reporting disabled in pyevent. Choose poll, kqueue, select, or epoll to enable reporting.')
+            _display('Reporting disabled in pyevent. Choose epoll, kqueue, poll, or select to enable reporting.')
         else:
             timeout(5,__report)
     return method

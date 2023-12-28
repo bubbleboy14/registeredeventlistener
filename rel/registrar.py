@@ -307,8 +307,8 @@ class PollRegistrar(Registrar):
         if mode:
             try:
                 self.poll.register(fd, mode)
-            except select.error:
-                pass
+            except select.error as e:
+                self.poll.modify(fd, mode)
 
 class EpollRegistrar(PollRegistrar):
     def __init__(self):

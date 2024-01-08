@@ -40,11 +40,11 @@ means run for 5 minutes, printing no incremental updates.
 
 When the time runs out, a sound will play on two conditions:
 there is a readable file at the specified path (configurable
-via the -m flag, with default: /var/local/rtimer_elapsed.mp3),
+via the -m flag, with default: ~/.rtimer/),
 and mplayer is installed.
 """
 
-import rel
+import rel, os, random
 try:
     from subprocess import getoutput # py3
 except:
@@ -72,11 +72,11 @@ def error(msg, *lines):
 
 # rtimer
 
-RT_MP3 = '/var/local/rtimer_elapsed.mp3'
-RT_USAGE = 'rtimer [seconds] [minutes] [hours] [update_increment]\n--\nall arguments default to zero. so, rtimer 15 30 2 60 means run for 15 seconds, 30 minutes, and 2 hours, printing a notice every 60 seconds. rtimer 0 5 means run for 5 minutes, printing no incremental updates. when the time runs out, a sound will play on two conditions: there is a readable file at the specified path (default: %s), and mplayer is installed.'%(RT_MP3,)
+RT_MEDIA = os.path.join(os.path.expanduser("~"), ".rtimer")
+RT_USAGE = 'rtimer [seconds] [minutes] [hours] [update_increment]\n--\nall arguments default to zero. so, rtimer 15 30 2 60 means run for 15 seconds, 30 minutes, and 2 hours, printing a notice every 60 seconds. rtimer 0 5 means run for 5 minutes, printing no incremental updates. when the time runs out, a sound will play on two conditions: there is a readable file at the specified path (default: %s), and mplayer is installed.'%(RT_MEDIA,)
 
 class Timer(object):
-    def __init__(self, s, m, h, interval=0, mp3=RT_MP3):
+    def __init__(self, s, m, h, interval=0, mediapath=RT_MEDIA):
         try:
             s, m, h, self.interval = int(s), int(m), int(h), int(interval)
         except:
@@ -86,28 +86,16 @@ class Timer(object):
         if self.count == self.goal:
             notice("USAGE: %s"%(RT_USAGE,))
             exit()
-        self.mp3 = mp3
+        self.media = mediapath
         problem = "no sound file path specified"
-        if self.mp3:
-            import os
+        if self.media:
             if "command not found" in getoutput("mplayer"):
-                self.mp3 = None
+                self.media = None
                 problem = "could not find mplayer!"
-            elif not os.path.isfile(mp3):
-                notice("mp3 not found - checking for mp4")
-                self.mp3 = mp3.replace(".mp3", ".mp4")
-                if not os.path.isfile(self.mp3):
-                    self.mp3 = None
-                    problem = "could not access sound file at %s -- no such file"%(mp3,)
-            if self.mp3:
-                try:
-                    f = open(self.mp3)
-                    f.close()
-                except:
-                    self.mp3 = None
-                    problem = "could not access sound file at %s -- permission denied"%(self.mp3,)
-        if not self.mp3:
-            notice("sound disabled", problem)
+            elif not os.path.isdir(self.media):
+                self.media = None
+                problem = "media directory not found! please mkdir ~/.rtimer/ and add some media files!"
+        self.media or notice("media notification disabled", problem)
 
     def start(self):
         self.count = 0
@@ -130,8 +118,8 @@ class Timer(object):
 
     def alarm(self):
         notice("time's up!")
-        if self.mp3:
-            getoutput("mplayer %s"%(self.mp3,))
+        if self.media:
+            getoutput("mplayer %s"%(os.path.join(self.media, random.choice(os.listdir(self.media))),))
         self.stop()
 
 ### functions for interpreting command-line instructions
@@ -141,7 +129,7 @@ class Timer(object):
 def timerCLI():
     from optparse import OptionParser
     parser = OptionParser(RT_USAGE)
-    parser.add_option("-m", "--mp3_file_path", dest="mp3", default=RT_MP3, help="location of alarm sound mp3. default: %s"%(RT_MP3,))
+    parser.add_option("-m", "--media_path", dest="media", default=RT_MEDIA, help="location of alarm media (audio/video) directory. default: %s"%(RT_MEDIA,))
     parser.add_option("-v", "--verbose", dest="verbose", default=False, action="store_true", help="run timer in verbose mode")
     options, arguments = parser.parse_args()
     if options.verbose:
@@ -152,5 +140,5 @@ def timerCLI():
         error("non-integer argument", "USAGE: %s"%(RT_USAGE,))
     while len(arguments) < 4:
         arguments.append(0)
-    arguments.append(options.mp3)
+    arguments.append(options.media)
     Timer(*arguments).start()

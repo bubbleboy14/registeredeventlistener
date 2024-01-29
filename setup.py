@@ -8,7 +8,7 @@ setup(
     author_email='mario.balibrera@gmail.com',
     license='MIT License',
     description='Registered Event Listener. Provides standard (pyevent) interface and functionality without external dependencies',
-    long_description='Select preferred event notification methods with initialize([methods in order of preference]). If initialize(...) is not called, methods are tried in default order: pyevent,epoll,poll,kqueue,select.',
+    long_description='Select preferred event notification methods with initialize([methods in order of preference]). If initialize(...) is not called, methods are tried in default order: epoll,kqueue,poll,select,pyevent.',
     packages=[
         'rel',
     ],

@@ -120,11 +120,11 @@ class EventTest(unittest.TestCase):
         def __read_cb(ev, fd, evtype, pipe):
             self.call_back_ran = True
             buf = os.read(fd, 1024)
-            assert buf == 'hi niels', 'read event failed'
+            assert buf == b'hi niels', 'read event failed'
         pipe = os.pipe()
         event.event(__read_cb, handle=pipe[0],
                     evtype=event.EV_READ).add()
-        os.write(pipe[1], 'hi niels')
+        os.write(pipe[1], b'hi niels')
         event.dispatch()
         self.assertTrue(self.call_back_ran, 'call back did not run')
 
@@ -132,7 +132,7 @@ class EventTest(unittest.TestCase):
         def __read2_cb(fd, msg):
             self.call_back_ran = True
             assert os.read(fd, 1024) == msg, 'read2 event failed'
-        msg = 'hello world'
+        msg = b'hello world'
         pipe = os.pipe()
         event.read(pipe[0], __read2_cb, pipe[0], msg)
         os.write(pipe[1], msg)

@@ -1,4 +1,3 @@
-#from rel.version import __version__
 from setuptools import setup
 
 setup(

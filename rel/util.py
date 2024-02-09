@@ -1,16 +1,16 @@
 listeners = {}
 
-def emit(channel, *data): # all cbs called, no return value
+def emit(channel, *args, **kwargs): # all cbs called, no return value
 	if channel not in listeners:
 		return print("%s: no one's listening"%(channel,))
 	for cb in listeners[channel]:
-		cb(*data)
+		cb(*args, **kwargs)
 
-def ask(channel, *data): # only 1st cb called, data returned
+def ask(channel, *args, **kwargs): # only 1st cb called, data returned
 	if channel not in listeners:
 		return print("%s: no one's listening"%(channel,))
 	for cb in listeners[channel]:
-		return cb(*data)
+		return cb(*args, **kwargs)
 
 def listen(channel, cb):
 	if channel not in listeners:

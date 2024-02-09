@@ -7,7 +7,7 @@ Install rel with pip:
 
     pip3 install rel
 
-Current version: [0.4.9.5](https://pypi.org/project/rel/)
+Current version: [0.4.9.6](https://pypi.org/project/rel/)
 
 ### Basic Structure
 The listener module contains classes for handling individual events. Instances
@@ -199,6 +199,20 @@ Sample usage:
     rel\test.py -v EventTest.test_exception EventTest.test_timeout
     ... etc.
 
+## util.py
+
+This module contains three functions: emit(), ask(), and listen().
+
+### listen(channel, cb)
+This function registers a listener callback on a channel.
+
+### emit(channel, *args, **kwargs)
+This function emits an event to all listeners on a channel.
+
+### ask(channel, *args, **kwargs)
+This function requests an answer from the first registered listener
+on a channel.
+
 ## rel.py
 
 R.E.L.
@@ -352,5 +366,5 @@ means run for 5 minutes, printing no incremental updates.
 
 When the time runs out, a sound will play on two conditions:
 there is a readable file at the specified path (configurable
-via the -m flag, with default: /var/local/rtimer_elapsed.mp3),
+via the -m flag, with default: ~/.rtimer/),
 and mplayer is installed.

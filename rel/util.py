@@ -1,3 +1,17 @@
+"""
+This module contains three functions: emit(), ask(), and listen().
+
+### listen(channel, cb)
+This function registers a listener callback on a channel.
+
+### emit(channel, *args, **kwargs)
+This function emits an event to all listeners on a channel.
+
+### ask(channel, *args, **kwargs)
+This function requests an answer from the first registered listener
+on a channel.
+"""
+
 listeners = {}
 
 def emit(channel, *args, **kwargs): # all cbs called, no return value

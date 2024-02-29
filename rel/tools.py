@@ -82,7 +82,7 @@ class Timer(object):
         except:
             error("invalid input", "seconds, minutes, hours, and interval must all be integers")
         self.count = 0
-        self.goal = s + m * 60 + h * 360
+        self.goal = s + m * 60 + h * 3600
         if self.count == self.goal:
             notice("USAGE: %s"%(RT_USAGE,))
             exit()

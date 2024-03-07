@@ -7,7 +7,7 @@ Install rel with pip:
 
     pip3 install rel
 
-Current version: [0.4.9.6](https://pypi.org/project/rel/)
+Current version: [0.4.9.7](https://pypi.org/project/rel/)
 
 ### Basic Structure
 The listener module contains classes for handling individual events. Instances
@@ -201,17 +201,26 @@ Sample usage:
 
 ## util.py
 
-This module contains three functions: emit(), ask(), and listen().
+This module contains five functions: emit(), ask(), listen(),
+when(), and transpire().
 
 ### listen(channel, cb)
 This function registers a listener callback on a channel.
 
 ### emit(channel, *args, **kwargs)
-This function emits an event to all listeners on a channel.
+This function emits an event to all listen()ers on a channel.
 
 ### ask(channel, *args, **kwargs)
-This function requests an answer from the first registered listener
-on a channel.
+This function requests an answer from the first registered
+listen()er on a channel.
+
+### when(event, cb, *args, **kwargs)
+This function calls cb if an event has transpire()d or
+registers it to be called the first time it transpire()s.
+
+### transpire(event)
+This function triggers any when()-registered event
+listeners, and notes that the event has transpired.
 
 ## rel.py
 

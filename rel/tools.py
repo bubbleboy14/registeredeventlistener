@@ -73,7 +73,7 @@ def error(msg, *lines):
 # rtimer
 
 RT_MEDIA = os.path.join(os.path.expanduser("~"), ".rtimer")
-RT_USAGE = 'rtimer [seconds] [minutes] [hours] [update_increment]\n--\nall arguments default to zero. so, rtimer 15 30 2 60 means run for 15 seconds, 30 minutes, and 2 hours, printing a notice every 60 seconds. rtimer 0 5 means run for 5 minutes, printing no incremental updates. when the time runs out, a sound will play on two conditions: there is a readable file at the specified path (default: %s), and mplayer is installed.'%(RT_MEDIA,)
+RT_USAGE = 'rtimer [seconds] [minutes] [hours] [update_increment]\n--\nall arguments default to zero. so, rtimer 15 30 2 60 means run for 15 seconds, 30 minutes, and 2 hours, printing a notice every 60 seconds. rtimer 0 5 means run for 5 minutes, printing no incremental updates. the -s, -m, -r, and -i flags may also be used to indicate seconds, minutes, hours, and increment, and if any flag is specified, update_increment defaults to 1 (instead of 0). when the time runs out, a sound will play on two conditions: there is a readable file at the specified path (default: %s), and mplayer is installed.'%(RT_MEDIA,)
 
 class Timer(object):
     def __init__(self, s, m, h, interval=0, mediapath=RT_MEDIA):
@@ -134,7 +134,11 @@ class Timer(object):
 def timerCLI():
     from optparse import OptionParser
     parser = OptionParser(RT_USAGE)
-    parser.add_option("-m", "--media_path", dest="media", default=RT_MEDIA, help="location of alarm media (audio/video) directory. default: %s"%(RT_MEDIA,))
+    parser.add_option("-r", "--hours", dest="hours", default=0, help="hours. default: 0")
+    parser.add_option("-m", "--minutes", dest="minutes", default=0, help="minutes. default: 0")
+    parser.add_option("-s", "--seconds", dest="seconds", default=0, help="seconds. default: 0")
+    parser.add_option("-i", "--increment", dest="increment", default=1, help="increment. default: 1")
+    parser.add_option("-p", "--path", dest="path", default=RT_MEDIA, help="location of alarm media (audio/video) directory. default: %s"%(RT_MEDIA,))
     parser.add_option("-v", "--verbose", dest="verbose", default=False, action="store_true", help="run timer in verbose mode")
     options, arguments = parser.parse_args()
     if options.verbose:
@@ -145,5 +149,10 @@ def timerCLI():
         error("non-integer argument", "USAGE: %s"%(RT_USAGE,))
     while len(arguments) < 4:
         arguments.append(0)
-    arguments.append(options.media)
+    if options.seconds or options.minutes or options.hours or options.increment:
+        arguments[0] = arguments[0] or int(options.seconds)
+        arguments[1] = arguments[1] or int(options.minutes)
+        arguments[2] = arguments[2] or int(options.hours)
+        arguments[3] = arguments[3] or int(options.increment)
+    arguments.append(options.path)
     Timer(*arguments).start()

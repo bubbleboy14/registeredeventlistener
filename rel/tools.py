@@ -38,9 +38,13 @@ a notice every 60 seconds.
 
 means run for 5 minutes, printing no incremental updates.
 
+The -s, -m, -r, and -i flags may also be used to indicate
+seconds, minutes, hours, and increment, and if any flag is
+specified, update_increment defaults to 1 (instead of 0).
+
 When the time runs out, a sound will play on two conditions:
 there is a readable file at the specified path (configurable
-via the -m flag, with default: ~/.rtimer/),
+via the -p flag, with default: ~/.rtimer/),
 and mplayer is installed.
 """
 

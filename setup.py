@@ -7,7 +7,7 @@ setup(
     author_email='mario.balibrera@gmail.com',
     license='MIT License',
     description='Registered Event Listener. Provides standard (pyevent) interface and functionality without external dependencies',
-    long_description='Select preferred event notification methods with initialize([methods in order of preference]). If initialize(...) is not called, methods are tried in default order: epoll,kqueue,poll,select,pyevent.',
+    long_description='Registered Event Listener (rel) is a cross-platform asynchronous event dispatcher primarily designed for network applications. Select your preferred event notification methods with initialize([methods in order of preference]). If initialize(...) is not called, methods are tried in the default order: epoll, kqueue, poll, select, pyevent. Code and docs live on github: https://github.com/bubbleboy14/registeredeventlistener',
     packages=[
         'rel',
     ],

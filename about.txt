@@ -5,7 +5,7 @@ Install rel with pip:
 
     pip3 install rel
 
-Current version: [0.4.9.8](https://pypi.org/project/rel/)
+Current version: [0.4.9.9](https://pypi.org/project/rel/)
 
 ### Basic Structure
 The listener module contains classes for handling individual events. Instances

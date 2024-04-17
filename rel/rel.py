@@ -34,6 +34,9 @@ settings, can be altered using the (optional) initialize() function:
 ### override()
 This override function can be used to seamlessly swap rel into
 a pyevent application.
+
+### buffwrite(sock, data)
+This function writes to an async socket.
 """
 
 import sys, threading, time, pprint
@@ -273,6 +276,19 @@ def thread(callback):
 def tick():
     check_init()
     return registrar.tick
+
+writings = {}
+
+def _bw(fn):
+    writings[fn].pop(0)()
+    return writings[fn]
+
+def buffwrite(sock, cb):
+    fn = sock.fileno()
+    if fn not in writings:
+        writings[fn] = []
+    writings[fn] or write(sock, _bw, fn)
+    writings[fn].append(cb)
 
 def start():
     signal(2, abort)

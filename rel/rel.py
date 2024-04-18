@@ -277,19 +277,6 @@ def tick():
     check_init()
     return registrar.tick
 
-writings = {}
-
-def _bw(fn):
-    writings[fn].pop(0)()
-    return writings[fn]
-
-def buffwrite(sock, cb):
-    fn = sock.fileno()
-    if fn not in writings:
-        writings[fn] = []
-    writings[fn] or write(sock, _bw, fn)
-    writings[fn].append(cb)
-
 def start():
     signal(2, abort)
     dispatch()
@@ -300,3 +287,25 @@ def stop():
         abort()
     else:
         sys.exit()
+
+WMAX = 65536
+writings = {}
+
+def _bw(fn):
+    wopts = writings[fn]
+    wopts["sender"](wopts["sock"], wopts["data"].pop(0))
+    return wopts["data"]
+
+def buffwrite(sock, data, sender):
+    fn = sock.fileno()
+    if fn not in writings:
+        writings[fn] = {
+            "data": []
+            "sock": sock,
+            "sender": sender
+        }
+    wdata = writings[fn]["data"]
+    wdata or write(sock, _bw, fn)
+    while data:
+        wdata.append(data[:WMAX])
+        data = data[WMAX:]

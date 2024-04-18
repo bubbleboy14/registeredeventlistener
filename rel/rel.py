@@ -300,7 +300,7 @@ def buffwrite(sock, data, sender):
     fn = sock.fileno()
     if fn not in writings:
         writings[fn] = {
-            "data": []
+            "data": [],
             "sock": sock,
             "sender": sender
         }

@@ -288,7 +288,7 @@ def stop():
     else:
         sys.exit()
 
-WMAX = 65536
+WMAX = 4096
 writings = {}
 
 def _bw(fn):

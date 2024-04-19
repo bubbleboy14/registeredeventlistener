@@ -82,7 +82,7 @@ def kbint(signals):
 
 class Registrar(object):
     def __init__(self):
-        self.events = {'read':{},'write':{}}
+        self.events = {'read':{},'write':{},'error':{}}
         self.timers = []
         self.addlist = []
         self.rmlist = []
@@ -119,6 +119,9 @@ class Registrar(object):
 
     def write(self,sock,cb,*args):
         return SocketIO(self,'write',sock,cb,*args)
+
+    def error(self,sock,cb,*args):
+        return SocketIO(self,'error',sock,cb,*args)
 
     def dispatch(self):
         self.run_dispatch = True
@@ -181,6 +184,10 @@ class Registrar(object):
             pass # just go on with other code :)
 
     def handle_error(self, fd):
+        if fd in self.events['error']:
+            self.callback('error', fd)
+
+    def handle_error_nah(self, fd):
         if fd in self.events['read']:
             self.callback('read', fd)
         if fd in self.events['write']:
@@ -203,7 +210,8 @@ class KqueueRegistrar(Registrar):
     
     def add(self, event):
         self.events[event.evtype][event.fd] = event
-        self.kq.control([select.kevent(event.fd, self.kqf[event.evtype], select.KQ_EV_ADD)], 0)
+        if event.evtype != "error": # comes in as a write...
+            self.kq.control([select.kevent(event.fd, self.kqf[event.evtype], select.KQ_EV_ADD)], 0)
     
     def remove(self, event):
         if event.fd in self.events[event.evtype]:
@@ -220,7 +228,10 @@ class KqueueRegistrar(Registrar):
                 if e.filter == self.kqf['read']:
                     self.callback('read', e.ident)
                 elif e.filter == self.kqf['write']:
-                    self.callback('write', e.ident)
+                    if e.flags & select.KQ_EV_EOF:
+                        self.handle_error(e.ident)
+                    else:
+                        self.callback('write', e.ident)
                 else:
                     self.handle_error(e.ident)
             return True
@@ -307,6 +318,8 @@ class PollRegistrar(Registrar):
             mode = mode|select.POLLIN
         if fd in self.events['write']:
             mode = mode|select.POLLOUT
+        if fd in self.events['error']:
+            mode = mode|select.POLLERR
         if mode:
             try:
                 self.poll.register(fd, mode)

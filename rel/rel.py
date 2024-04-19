@@ -215,6 +215,10 @@ def write(sock,cb,*args):
     check_init()
     return registrar.write(sock,cb,*args)
 
+def error(sock,cb,*args):
+    check_init()
+    return registrar.error(sock,cb,*args)
+
 def timeout(delay, cb, *args):
     check_init()
     return registrar.timeout(delay,cb,*args)
@@ -296,16 +300,19 @@ def _bw(fn):
     wopts["sender"](wopts["sock"], wopts["data"].pop(0))
     return wopts["data"]
 
-def buffwrite(sock, data, sender):
+def buffwrite(sock, data, sender, err):
     fn = sock.fileno()
     if fn not in writings:
         writings[fn] = {
             "data": [],
+            "err": err,
             "sock": sock,
             "sender": sender
         }
     wdata = writings[fn]["data"]
-    wdata or write(sock, _bw, fn)
+    if not wdata:
+        write(sock, _bw, fn)
+        error(sock, err)
     while data:
         wdata.append(data[:WMAX])
         data = data[WMAX:]

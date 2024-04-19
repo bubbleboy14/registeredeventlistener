@@ -304,8 +304,8 @@ def _bw(fn):
     return wopts["data"]
 
 def _berr(fn, ecb):
-    wopts = writings[fn]
     def _ewrap():
+        wopts = writings[fn]
         if "efired" not in wopts:
             wopts["efired"] = True
             ecb()

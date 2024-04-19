@@ -323,6 +323,8 @@ class PollRegistrar(Registrar):
         if mode:
             try:
                 self.poll.register(fd, mode)
+            except OSError:
+                self.handle_error(fd)
             except select.error:
                 self.poll.modify(fd, mode)
 

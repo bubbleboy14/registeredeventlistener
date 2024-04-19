@@ -303,8 +303,17 @@ def _bw(fn):
         wopts["err"]()
     return wopts["data"]
 
-def buffwrite(sock, data, sender, err):
+def _berr(fn, ecb):
+    wopts = writings[fn]
+    def _ewrap():
+        if "efired" not in wopts:
+            wopts["efired"] = True
+            ecb()
+    return _ewrap
+
+def buffwrite(sock, data, sender, ecb):
     fn = sock.fileno()
+    err = _berr(fn, ecb)
     if fn not in writings:
         writings[fn] = {
             "data": [],

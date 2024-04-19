@@ -297,7 +297,10 @@ writings = {}
 
 def _bw(fn):
     wopts = writings[fn]
-    wopts["sender"](wopts["sock"], wopts["data"].pop(0))
+    try:
+        wopts["sender"](wopts["sock"], wopts["data"].pop(0))
+    except OSError:
+        wopts["err"]()
     return wopts["data"]
 
 def buffwrite(sock, data, sender, err):

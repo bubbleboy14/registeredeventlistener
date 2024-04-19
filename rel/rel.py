@@ -299,9 +299,9 @@ def _bw(fn):
     wopts = writings[fn]
     try:
         wopts["sender"](wopts["sock"], wopts["data"].pop(0))
+        return wopts["data"]
     except OSError:
         wopts["err"]()
-    return wopts["data"]
 
 def _berr(fn, ecb):
     def _ewrap():

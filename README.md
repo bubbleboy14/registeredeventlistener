@@ -7,7 +7,7 @@ Install rel with pip:
 
     pip3 install rel
 
-Current version: [0.4.9.9](https://pypi.org/project/rel/)
+Current version: [0.4.9.10](https://pypi.org/project/rel/)
 
 ### Basic Structure
 The listener module contains classes for handling individual events. Instances
@@ -259,6 +259,9 @@ settings, can be altered using the (optional) initialize() function:
 ### override()
 This override function can be used to seamlessly swap rel into
 a pyevent application.
+
+### buffwrite(sock, data)
+This function writes to an async socket.
 
 ## listener.py
 

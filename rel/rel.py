@@ -34,6 +34,9 @@ settings, can be altered using the (optional) initialize() function:
 ### override()
 This override function can be used to seamlessly swap rel into
 a pyevent application.
+
+### buffwrite(sock, data)
+This function writes to an async socket.
 """
 
 import sys, threading, time, pprint
@@ -212,6 +215,10 @@ def write(sock,cb,*args):
     check_init()
     return registrar.write(sock,cb,*args)
 
+def error(sock,cb,*args):
+    check_init()
+    return registrar.error(sock,cb,*args)
+
 def timeout(delay, cb, *args):
     check_init()
     return registrar.timeout(delay,cb,*args)
@@ -284,3 +291,40 @@ def stop():
         abort()
     else:
         sys.exit()
+
+WMAX = 4096
+writings = {}
+
+def _bw(fn):
+    wopts = writings[fn]
+    try:
+        wopts["sender"](wopts["sock"], wopts["data"].pop(0))
+        return wopts["data"]
+    except OSError:
+        wopts["err"]()
+
+def _berr(fn, ecb):
+    def _ewrap():
+        wopts = writings[fn]
+        if "efired" not in wopts:
+            wopts["efired"] = True
+            ecb()
+    return _ewrap
+
+def buffwrite(sock, data, sender, ecb):
+    fn = sock.fileno()
+    err = _berr(fn, ecb)
+    if fn not in writings:
+        writings[fn] = {
+            "data": [],
+            "err": err,
+            "sock": sock,
+            "sender": sender
+        }
+    wdata = writings[fn]["data"]
+    if not wdata:
+        write(sock, _bw, fn)
+        error(sock, err)
+    while data:
+        wdata.append(data[:WMAX])
+        data = data[WMAX:]

@@ -323,9 +323,10 @@ def buffwrite(sock, data, sender, ecb):
             "error": error(sock, err),
             "write": write(sock, _bw, fn)
         }
-    wdata = writings[fn]["data"]
+    wropts = writings[fn]
+    wdata = wropts["data"]
     while data:
         wdata.append(data[:WMAX])
         data = data[WMAX:]
     for event_listener in ["write", "error"]:
-        wdata[event_listener].pending() or wdata[event_listener].add()
+        wropts[event_listener].pending() or wropts[event_listener].add()

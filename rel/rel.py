@@ -313,18 +313,19 @@ def _berr(fn, ecb):
 
 def buffwrite(sock, data, sender, ecb):
     fn = sock.fileno()
-    err = _berr(fn, ecb)
     if fn not in writings:
+        err = _berr(fn, ecb)
         writings[fn] = {
             "data": [],
             "err": err,
             "sock": sock,
-            "sender": sender
+            "sender": sender,
+            "error": error(sock, err),
+            "write": write(sock, _bw, fn)
         }
     wdata = writings[fn]["data"]
-    if not wdata:
-        write(sock, _bw, fn)
-        error(sock, err)
     while data:
         wdata.append(data[:WMAX])
         data = data[WMAX:]
+    for event_listener in ["write", "error"]:
+        wdata[event_listener].pending() or wdata[event_listener].add()

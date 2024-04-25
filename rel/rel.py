@@ -34,9 +34,6 @@ settings, can be altered using the (optional) initialize() function:
 ### override()
 This override function can be used to seamlessly swap rel into
 a pyevent application.
-
-### buffwrite(sock, data)
-This function writes to an async socket.
 """
 
 import sys, threading, time, pprint, ssl
@@ -100,7 +97,7 @@ mapping = {
     'kqueue': KqueueRegistrar
 }
 
-def _display(text):
+def log(text):
     verbose and print("rel:", text)
 
 def __report():
@@ -121,19 +118,19 @@ class Thread_Checker(object):
     def __init__(self, threaded):
         self.active = threaded and registrar == pyevent
         if threaded and registrar != pyevent:
-            _display('GIL hack unnecessary for non-pyevent registrar. GIL hack disabled.')
+            log('GIL hack unnecessary for non-pyevent registrar. GIL hack disabled.')
         self.go()
 
     def go(self):
         if self.active:
-            _display('Thread Checking Enabled')
+            log('Thread Checking Enabled')
             self.checker = timeout(1,self.check)
             self.sleeper = timeout(0.01, self.release)
             self.sleeper.delete()
 
     def stop(self):
         if self.active:
-            _display('Thread Checking Disabled')
+            log('Thread Checking Disabled')
             self.checker.delete()
             self.sleeper.delete()
 
@@ -144,11 +141,11 @@ class Thread_Checker(object):
     def check(self):
         if threading.activeCount() > 1:
             if not self.sleeper.pending():
-                _display('Enabling GIL hack')
+                log('Enabling GIL hack')
                 self.sleeper.add(.01)
         else:
             if self.sleeper.pending():
-                _display('Disabling GIL hack')
+                log('Disabling GIL hack')
                 self.sleeper.delete()
         return True
 
@@ -190,14 +187,14 @@ def initialize(methods=supported_methods,options=()):
             registrar = get_registrar(method)
             break
         except ImportError:
-            _display('Could not import "%s"'%method)
+            log('Could not import "%s"'%method)
     if registrar is None:
         raise ImportError("Could not import any of given methods: %s" % (methods,))
-    _display('Initialized with "%s"'%method)
+    log('Initialized with "%s"'%method)
     threader = Thread_Checker('threaded' in options)
     if "report" in options:
         if registrar == pyevent:
-            _display('Reporting disabled in pyevent. Choose epoll, kqueue, poll, or select to enable reporting.')
+            log('Reporting disabled in pyevent. Choose epoll, kqueue, poll, or select to enable reporting.')
         else:
             timeout(5,__report)
     return method
@@ -284,67 +281,13 @@ def tick():
     return registrar.tick
 
 def start():
-    _display("stop")
+    log("stop")
     signal(2, abort)
     dispatch()
 
 def stop():
-    _display("goodbye")
+    log("goodbye")
     if is_running():
         abort()
     else:
         sys.exit()
-
-WMAX = 4096
-writings = {}
-
-def _bw(fn):
-    wopts = writings[fn]
-    if wopts["errored"]:
-        return _display("buffwrite aborted (already errored)")
-    try:
-        wd = wopts["data"][0]
-        sent = wopts["sender"](wopts["sock"], wd)
-        if sent == len(wd):
-            wopts["data"].pop(0)
-        else:
-            wopts["data"][0] = wd[sent:]
-        wopts["data"] or _display("buffwrite send complete")
-        return wopts["data"]
-    except ssl.SSLWantWriteError:
-        _display("buffwrite SSLWantWriteError - waiting!")
-        return True
-    except OSError:
-        _display("buffwrite send error!")
-        wopts["err"]()
-
-def _berr(fn, ecb):
-    def _ewrap():
-        wopts = writings[fn]
-        firstFire = not wopts["errored"]
-        _display("buffwrite error (%s)"%(firstFire and "first" or "redundant",))
-        if firstFire:
-            wopts["errored"] = True
-            ecb()
-    return _ewrap
-
-def buffwrite(sock, data, sender, ecb):
-    fn = sock.fileno()
-    if fn not in writings:
-        err = _berr(fn, ecb)
-        writings[fn] = {
-            "data": [],
-            "err": err,
-            "sock": sock,
-            "sender": sender,
-            "errored": False,
-            "error": error(sock, err),
-            "write": write(sock, _bw, fn)
-        }
-    wropts = writings[fn]
-    wdata = wropts["data"]
-    while data:
-        wdata.append(data[:WMAX])
-        data = data[WMAX:]
-    for event_listener in ["write", "error"]:
-        wropts[event_listener].pending() or wropts[event_listener].add()

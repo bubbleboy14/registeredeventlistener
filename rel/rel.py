@@ -300,6 +300,8 @@ writings = {}
 
 def _bw(fn):
     wopts = writings[fn]
+    if wopts["errored"]:
+        return _display("buffwrite aborted (already errored)")
     try:
         wd = wopts["data"][0]
         sent = wopts["sender"](wopts["sock"], wd)
@@ -316,10 +318,10 @@ def _bw(fn):
 def _berr(fn, ecb):
     def _ewrap():
         wopts = writings[fn]
-        firstFire = "efired" not in wopts
+        firstFire = not wopts["errored"]
         _display("buffwrite error (%s)"%(firstFire and "first" or "redundant",))
         if firstFire:
-            wopts["efired"] = True
+            wopts["errored"] = True
             ecb()
     return _ewrap
 
@@ -332,6 +334,7 @@ def buffwrite(sock, data, sender, ecb):
             "err": err,
             "sock": sock,
             "sender": sender,
+            "errored": False,
             "error": error(sock, err),
             "write": write(sock, _bw, fn)
         }

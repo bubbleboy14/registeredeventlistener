@@ -298,7 +298,12 @@ writings = {}
 def _bw(fn):
     wopts = writings[fn]
     try:
-        wopts["sender"](wopts["sock"], wopts["data"].pop(0))
+        wd = wopts["data"][0]
+        sent = wopts["sender"](wopts["sock"], wd)
+        if sent == len(wd):
+            wopts["data"].pop(0)
+        else:
+            wopts["data"][0] = wd[sent:]
         return wopts["data"]
     except OSError:
         wopts["err"]()

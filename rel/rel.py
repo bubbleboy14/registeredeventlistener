@@ -39,7 +39,7 @@ a pyevent application.
 This function writes to an async socket.
 """
 
-import sys, threading, time, pprint
+import sys, threading, time, pprint, ssl
 from .registrar import set_sleep, set_turbo, SelectRegistrar, PollRegistrar, EpollRegistrar, KqueueRegistrar
 from .listener import EV_PERSIST, EV_READ, EV_SIGNAL, EV_TIMEOUT, EV_WRITE
 try:
@@ -311,6 +311,9 @@ def _bw(fn):
             wopts["data"][0] = wd[sent:]
         wopts["data"] or _display("buffwrite send complete")
         return wopts["data"]
+    except ssl.SSLWantWriteError:
+        _display("buffwrite SSLWantWriteError - waiting!")
+        return True
     except OSError:
         _display("buffwrite send error!")
         wopts["err"]()

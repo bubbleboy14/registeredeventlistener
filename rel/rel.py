@@ -101,8 +101,7 @@ mapping = {
 }
 
 def _display(text):
-    if verbose:
-        print("Registered Event Listener output:", text)
+    verbose and print("rel:", text)
 
 def __report():
     print("=" * 60)
@@ -166,6 +165,10 @@ def get_registrar(method):
         return mapping[method]()
     raise ImportError
 
+def set_verbose(isverb):
+    global verbose
+    verbose = isverb
+
 def initialize(methods=supported_methods,options=()):
     """
     initialize(methods=['epoll','kqueue','poll','select','pyevent'],options=[])
@@ -177,8 +180,7 @@ def initialize(methods=supported_methods,options=()):
     """
     global registrar
     global threader
-    global verbose
-    verbose = "verbose" in options
+    set_verbose("verbose" in options)
     if "strict" not in options:
         for m in supported_methods:
             if m not in methods:
@@ -282,6 +284,7 @@ def tick():
     return registrar.tick
 
 def start():
+    _display("stop")
     signal(2, abort)
     dispatch()
 
@@ -297,17 +300,28 @@ writings = {}
 
 def _bw(fn):
     wopts = writings[fn]
+    if wopts["errored"]:
+        return _display("buffwrite aborted (already errored)")
     try:
-        wopts["sender"](wopts["sock"], wopts["data"].pop(0))
+        wd = wopts["data"][0]
+        sent = wopts["sender"](wopts["sock"], wd)
+        if sent == len(wd):
+            wopts["data"].pop(0)
+        else:
+            wopts["data"][0] = wd[sent:]
+        wopts["data"] or _display("buffwrite send complete")
         return wopts["data"]
     except OSError:
+        _display("buffwrite send error!")
         wopts["err"]()
 
 def _berr(fn, ecb):
     def _ewrap():
         wopts = writings[fn]
-        if "efired" not in wopts:
-            wopts["efired"] = True
+        firstFire = not wopts["errored"]
+        _display("buffwrite error (%s)"%(firstFire and "first" or "redundant",))
+        if firstFire:
+            wopts["errored"] = True
             ecb()
     return _ewrap
 
@@ -320,6 +334,7 @@ def buffwrite(sock, data, sender, ecb):
             "err": err,
             "sock": sock,
             "sender": sender,
+            "errored": False,
             "error": error(sock, err),
             "write": write(sock, _bw, fn)
         }

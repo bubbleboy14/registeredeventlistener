@@ -36,7 +36,7 @@ This override function can be used to seamlessly swap rel into
 a pyevent application.
 """
 
-import sys, threading, time, pprint, ssl
+import sys, threading, time, pprint
 from .registrar import set_sleep, set_turbo, SelectRegistrar, PollRegistrar, EpollRegistrar, KqueueRegistrar
 from .listener import EV_PERSIST, EV_READ, EV_SIGNAL, EV_TIMEOUT, EV_WRITE
 try:

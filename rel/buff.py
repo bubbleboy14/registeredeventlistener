@@ -29,14 +29,8 @@ class BuffWriter(object):
 		self.log("error #%s: %s"%(len(self.errors), msg))
 
 	def write(self):
-#		if self.errors:
-#			return self.log("aborting write (errors!)")
-		d = self.data[0]
-		sent = self.sender(self.sock, d)
-		if sent == len(d):
-			self.data.pop(0)
-		else:
-			self.data[0] = d[sent:]
+		self.sender(self.sock, self.data[0])
+		self.data.pop(0)
 		self.data or self.log("write complete")
 		return self.data
 

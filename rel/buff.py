@@ -10,11 +10,13 @@ writings = {}
 class BuffWriter(object):
 	def __init__(self, sock, data, sender=None, onerror=None):
 		self.data = []
+		self.errors = []
 		self.sock = sock
 		self.fileno = sock.fileno()
 		self.sender = sender or sock.send
+		if not onerror:
+			onerror = lambda *a : self.log("unhandled error:", *a)
 		self.onerror = onerror
-		self.errors = []
 		self.listen()
 		self.ingest(data)
 		self.log("initialized with %s-part message"%(len(self.data),))
@@ -23,13 +25,15 @@ class BuffWriter(object):
 		log("BuffWriter[%s]: %s"%(self.fileno, " ".join(msg)))
 
 	def error(self, msg="unexpected error"):
-		if self.onerror and not self.errors:
-			self.onerror(msg) # 1st time only...
+		self.onerror(msg)
 		self.errors.append(msg)
 		self.log("error #%s: %s"%(len(self.errors), msg))
 
 	def write(self):
-		self.sender(self.sock, self.data[0])
+		try:
+			self.sender(self.sock, self.data[0])
+		except Exception as e:
+			return self.error(e)
 		self.data.pop(0)
 		self.data or self.log("write complete")
 		return self.data

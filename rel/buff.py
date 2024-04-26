@@ -33,7 +33,8 @@ class BuffWriter(object):
 		try:
 			self.sender(self.sock, self.data[0])
 		except Exception as e:
-			return self.error(e)
+			self.data = []
+			return self.error("write error: %s"%(e,))
 		self.data.pop(0)
 		self.data or self.log("write complete")
 		return self.data

@@ -14,7 +14,7 @@ class BuffWriter(object):
 		self.fileno = sock.fileno()
 		self.sender = sender or sock.send
 		self.onerror = onerror
-		self.errors = 0
+		self.errors = []
 		self.listen()
 		self.ingest(data)
 		self.log("initialized with %s-part message"%(len(self.data),))
@@ -22,15 +22,15 @@ class BuffWriter(object):
 	def log(self, *msg):
 		log("BuffWriter[%s]: %s"%(self.fileno, " ".join(msg)))
 
-	def error(self):
+	def error(self, msg="unexpected error"):
 		if self.onerror and not self.errors:
-			self.onerror() # 1st time only...
-		self.errors += 1
-		self.log("error #%s"%(self.errors,))
+			self.onerror(msg) # 1st time only...
+		self.errors.append(msg)
+		self.log("error #%s: %s"%(len(self.errors), msg))
 
 	def write(self):
-		if self.errors:
-			return self.log("aborting write (errors!)")
+#		if self.errors:
+#			return self.log("aborting write (errors!)")
 		d = self.data[0]
 		sent = self.sender(self.sock, d)
 		if sent == len(d):
@@ -58,6 +58,7 @@ class BuffWriter(object):
 def buffwrite(sock, data, sender, onerror):
 	fn = sock.fileno()
 	if fn in writings:
+		writings[fn].sock = sock
 		writings[fn].ingest(data)
 	else:
 		writings[fn] = BuffWriter(sock, data, sender, onerror)

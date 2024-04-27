@@ -51,7 +51,7 @@ class BuffWriter(object):
 		self.onerror = onerror
 		self.listen()
 		self.ingest(data)
-		self.log("initialized with %s-part message"%(len(self.data),))
+		self.log("initialized with %s-byte message"%(len(data),))
 
 	def log(self, *msg):
 		log("BuffWriter[%s]: %s"%(self.fileno, " ".join(msg)))

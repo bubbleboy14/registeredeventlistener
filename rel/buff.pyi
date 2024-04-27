@@ -4,13 +4,25 @@ from _typeshed import Incomplete
 WMAX: int
 writings: Incomplete
 
-class BuffWriter:
+class BuffWrite:
     data: Incomplete
+    sender: Incomplete
+    complete: bool
+    error: Incomplete
+    def __init__(self, data, sender) -> None: ...
+    def log(self, *msg) -> None: ...
+    position: int
+    def reset(self) -> None: ...
+    def write(self, sock): ...
+    def ingest(self, data) -> None: ...
+
+class BuffWriter:
+    writes: Incomplete
+    errors: Incomplete
     sock: Incomplete
     fileno: Incomplete
     sender: Incomplete
     onerror: Incomplete
-    errors: Incomplete
     def __init__(self, sock, data, sender: Incomplete | None = ..., onerror: Incomplete | None = ...) -> None: ...
     def log(self, *msg) -> None: ...
     def error(self, msg: str = ...) -> None: ...

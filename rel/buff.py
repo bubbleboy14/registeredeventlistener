@@ -29,15 +29,15 @@ class BuffWrite(object):
 			self.error = e
 			return self.reset()
 		self.position += 1
-		if self.position == len(data):
+		if self.position == len(self.data):
 			self.complete = True
 			self.log("write complete")
 
 	def ingest(self, data):
-		self.log("ingesting %s bytes"%(len(data),))
 		while data:
 			self.data.append(data[:WMAX])
 			data = data[WMAX:]
+		self.log("ingesting %s bytes -> %s chunks in buffer"%(len(data), len(self.data)))
 
 class BuffWriter(object):
 	def __init__(self, sock, data, sender=None, onerror=None):

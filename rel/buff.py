@@ -7,9 +7,41 @@ from .rel import read, write, error, log
 WMAX = 4096
 writings = {}
 
+class BuffWrite(object):
+	def __init__(self, data, sender):
+		self.data = []
+		self.sender = sender
+		self.complete = False
+		self.error = None
+		self.ingest(data)
+		self.reset()
+
+	def log(self, *msg):
+		log("BuffWrite: %s"%(" ".join(msg),))
+
+	def reset(self):
+		self.position = 0
+
+	def write(self, sock):
+		try:
+			self.sender(sock, self.data[self.position])
+		except Exception as e:
+			self.error = e
+			return self.reset()
+		self.position += 1
+		if self.position == len(data):
+			self.complete = True
+			self.log("write complete")
+
+	def ingest(self, data):
+		self.log("ingesting %s bytes"%(len(data),))
+		while data:
+			self.data.append(data[:WMAX])
+			data = data[WMAX:]
+
 class BuffWriter(object):
 	def __init__(self, sock, data, sender=None, onerror=None):
-		self.data = []
+		self.writes = []
 		self.errors = []
 		self.sock = sock
 		self.fileno = sock.fileno()
@@ -30,14 +62,13 @@ class BuffWriter(object):
 		self.log("error #%s: %s"%(len(self.errors), msg))
 
 	def write(self):
-		try:
-			self.sender(self.sock, self.data[0])
-		except Exception as e:
-			self.data = []
+		bw = self.writes[0]
+		bw.write(self.sock)
+		if bw.error:
 			return self.error("write error: %s"%(e,))
-		self.data.pop(0)
-		self.data or self.log("write complete")
-		return self.data
+		bw.complete and self.writes.pop(0)
+		self.writes or self.log("all writes complete")
+		return self.writes
 
 	def listen(self):
 		self.log("listening")
@@ -48,9 +79,7 @@ class BuffWriter(object):
 
 	def ingest(self, data):
 		self.log("ingesting %s bytes"%(len(data),))
-		while data:
-			self.data.append(data[:WMAX])
-			data = data[WMAX:]
+		self.writes.append(BuffWrite(data, self.sender))
 		for etype in self.listeners:
 			self.listeners[etype].pending() or self.listeners[etype].add()
 

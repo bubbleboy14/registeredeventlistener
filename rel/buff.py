@@ -34,10 +34,11 @@ class BuffWrite(object):
 			self.log("write complete")
 
 	def ingest(self, data):
+		ld = len(data)
 		while data:
 			self.data.append(data[:WMAX])
 			data = data[WMAX:]
-		self.log("ingesting %s bytes -> %s chunks in buffer"%(len(data), len(self.data)))
+		self.log("ingested %s bytes -> %s chunks in buffer"%(ld, len(self.data)))
 
 class BuffWriter(object):
 	def __init__(self, sock, data, sender=None, onerror=None):

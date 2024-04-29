@@ -66,7 +66,7 @@ class BuffWriter(object):
 		bw = self.writes[0]
 		bw.write(self.sock)
 		if bw.error:
-			return self.error("write error: %s"%(e,))
+			return self.error("write error: %s"%(bw.error,))
 		bw.complete and self.writes.pop(0)
 		self.writes or self.log("all writes complete")
 		return self.writes

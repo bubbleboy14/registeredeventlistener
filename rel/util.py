@@ -21,18 +21,20 @@ This function triggers any when()-registered event
 listeners, and notes that the event has transpired.
 """
 
+from .rel import log
+
 listeners = {}
 happenings = {}
 
 def emit(channel, *args, **kwargs): # all cbs called, no return value
 	if channel not in listeners:
-		return print("%s: no one's listening"%(channel,))
+		return log("%s: no one's listening"%(channel,))
 	for cb in listeners[channel]:
 		cb(*args, **kwargs)
 
 def ask(channel, *args, **kwargs): # only 1st cb called, data returned
 	if channel not in listeners:
-		return print("%s: no one's listening"%(channel,))
+		return log("%s: no one's listening"%(channel,))
 	for cb in listeners[channel]:
 		return cb(*args, **kwargs)
 

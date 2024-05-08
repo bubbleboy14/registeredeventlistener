@@ -130,7 +130,7 @@ class Registrar(object):
                 self.run_dispatch = False
 
     def loop(self):
-        if SLEEP_TURBO and self.events["write"]:
+        if SLEEP_TURBO and (self.events["write"] or self.events["read"]):
             time.sleep(SLEEP_TURBO)
         else:
             time.sleep(SLEEP_SEC)

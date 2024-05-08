@@ -38,9 +38,9 @@ GIL integration / thread compatibility.
 Another benefit of the pure-Python Registrar subclasses (wrapping epoll,
 poll, kqueue, and select - by default, rel uses the fastest available) is
 that they run at configurable rates. By default, rel's CPU footprint is
-unnoticeably tiny unless it's currently managing active writes, in which
-case it ramps up to push the bytes through faster. These rates (normal
-and turbo) can be adjusted with a couple functions:
+unnoticeably tiny unless it's currently managing active writes or reads,
+in which case it ramps up to push the bytes through faster. These rates
+(normal and turbo) can be adjusted with a couple functions:
 
     def set_sleep(s):
         global SLEEP_SEC

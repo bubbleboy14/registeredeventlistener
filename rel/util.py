@@ -26,15 +26,23 @@ from .rel import log
 listeners = {}
 happenings = {}
 
+LOUD = True
+def loudListen(isloud):
+	global LOUD
+	LOUD = isloud
+
+def notListening(variety, channel):
+	LOUD and log("%s(%s): no one's listening"%(variety, channel))
+
 def emit(channel, *args, **kwargs): # all cbs called, no return value
 	if channel not in listeners:
-		return log("%s: no one's listening"%(channel,))
+		return notListening("emit", channel)
 	for cb in listeners[channel]:
 		cb(*args, **kwargs)
 
 def ask(channel, *args, **kwargs): # only 1st cb called, data returned
 	if channel not in listeners:
-		return log("%s: no one's listening"%(channel,))
+		return notListening("ask", channel)
 	for cb in listeners[channel]:
 		return cb(*args, **kwargs)
 

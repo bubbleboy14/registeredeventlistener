@@ -63,12 +63,15 @@ class BuffWriter(object):
 		self.log("error #%s: %s"%(len(self.errors), msg))
 
 	def write(self):
-		bw = self.writes[0]
-		bw.write(self.sock)
-		if bw.error:
-			return self.error("write error: %s"%(bw.error,))
-		bw.complete and self.writes.pop(0)
-		self.writes or self.log("all writes complete")
+		if self.writes:
+			bw = self.writes[0]
+			bw.write(self.sock)
+			if bw.error:
+				return self.error("write error: %s"%(bw.error,))
+			bw.complete and self.writes.pop(0)
+			self.writes or self.log("all writes complete")
+		else:
+			self.log("unexpected empty write()!")
 		return self.writes
 
 	def listen(self):

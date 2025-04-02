@@ -281,7 +281,7 @@ def tick():
     return registrar.tick
 
 def start():
-    log("stop")
+    log("start")
     signal(2, abort)
     dispatch()
 

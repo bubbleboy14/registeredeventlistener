@@ -21,18 +21,33 @@ This function triggers any when()-registered event
 listeners, and notes that the event has transpired.
 """
 
-from .rel import log
-
 listeners = {}
 happenings = {}
-
+verbose = False
 LOUD = True
+
+def set_verbose(isverb):
+	global verbose
+	verbose = isverb
+	log("set_verbose %s"%(isverb,))
+
+def log(text):
+	verbose and print("rel", text)
+
 def loudListen(isloud):
 	global LOUD
 	LOUD = isloud
 
 def notListening(variety, channel):
 	LOUD and log("%s(%s): no one's listening"%(variety, channel))
+
+class Basic(object):
+	def log(self, *msg):
+		if not hasattr(self, "name"):
+			self.name = self.__class__.__name__
+			if hasattr(self, "subname"):
+				self.name = "%s(%s)"%(self.name, self.subname)
+		log("%s : %s"%(self.name, " ".join([str(m) for m in msg])))
 
 def emit(channel, *args, **kwargs): # all cbs called, no return value
 	if channel not in listeners:

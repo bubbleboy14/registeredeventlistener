@@ -39,6 +39,7 @@ a pyevent application.
 import sys, threading, time, pprint
 from .registrar import set_sleep, set_turbo, SelectRegistrar, PollRegistrar, EpollRegistrar, KqueueRegistrar
 from .listener import EV_PERSIST, EV_READ, EV_SIGNAL, EV_TIMEOUT, EV_WRITE
+from .util import log, set_verbose
 try:
     import event as pyevent
 except ImportError:
@@ -87,7 +88,6 @@ def override():
 running = False
 registrar = None
 threader = None
-verbose = False
 supported_methods = ['epoll','kqueue','poll','select','pyevent']
 
 mapping = {
@@ -96,9 +96,6 @@ mapping = {
     'poll': PollRegistrar,
     'kqueue': KqueueRegistrar
 }
-
-def log(text):
-    verbose and print("rel:", text)
 
 def __report():
     print("=" * 60)
@@ -162,10 +159,6 @@ def get_registrar(method):
         return mapping[method]()
     raise ImportError
 
-def set_verbose(isverb):
-    global verbose
-    verbose = isverb
-
 def initialize(methods=supported_methods,options=()):
     """
     initialize(methods=['epoll','kqueue','poll','select','pyevent'],options=[])
@@ -177,7 +170,8 @@ def initialize(methods=supported_methods,options=()):
     """
     global registrar
     global threader
-    set_verbose("verbose" in options)
+    if "verbose" in options:
+        set_verbose(True)
     if "strict" not in options:
         for m in supported_methods:
             if m not in methods:

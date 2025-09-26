@@ -17,8 +17,8 @@ to manage signal events.
 This class uses a Registrar subclass to manage timer events.
 """
 
-import time
-import signal
+import time, signal
+from .util import Basic
 
 EV_PERSIST = 16
 EV_READ = 2
@@ -76,7 +76,7 @@ class Event(object):
     def callback(self):
         self.cb(self,self.handle,self.evtype,self.arg)
 
-class SocketIO(object):
+class SocketIO(Basic):
     def __init__(self, registrar, evtype, sock, cb, *args):
         self.registrar = registrar
         self.evtype = evtype
@@ -84,6 +84,7 @@ class SocketIO(object):
         self.fd = sock
         if hasattr(self.fd,'fileno'):
             self.fd = self.fd.fileno()
+        self.subname = "%s-%s"%(self.evtype, self.fd)
         self.cb = cb
         self.args = args
         self.persist = False
@@ -104,16 +105,19 @@ class SocketIO(object):
         self.persist = True
 
     def add(self, delay=None):
+        self.log("add w/ delay =", delay)
         if delay is not None:
             self.timeout.add(delay)
         self.registrar.add(self)
         self.active = 1
 
     def delete(self):
+        self.log("delete")
         self.registrar.remove(self)
         self.active = 0
 
     def dereference(self):
+        self.log("deference")
         if self.pending():
             self.delete()
         self.cb = None

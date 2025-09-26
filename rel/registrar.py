@@ -52,9 +52,10 @@ in which case it ramps up to push the bytes through faster. These rates
 """
 
 from datetime import datetime
+import select, signal, time, operator
 from .listener import Event, SocketIO, Timer, Signal, contains
 from .errors import AbortBranch
-import select, signal, time, operator
+from .util import Basic
 try:
     from select import epoll
 except ImportError:
@@ -80,7 +81,7 @@ def kbint(signals):
         return True
     raise KeyboardInterrupt("You have not set a Keyboard Interrupt callback. To do so, use: 'rel.signal(2, your_callback_function)'.")
 
-class Registrar(object):
+class Registrar(Basic):
     def __init__(self):
         self.events = {'read':{},'write':{},'error':{}}
         self.timers = []
@@ -112,15 +113,19 @@ class Registrar(object):
         self.__init__()
 
     def event(self,callback,arg,evtype,handle):
+        self.log("event")
         return Event(self,callback,arg,evtype,handle)
 
     def read(self,sock,cb,*args):
+        self.log("read")
         return SocketIO(self,'read',sock,cb,*args)
 
     def write(self,sock,cb,*args):
+        self.log("write")
         return SocketIO(self,'write',sock,cb,*args)
 
     def error(self,sock,cb,*args):
+        self.log("error")
         return SocketIO(self,'error',sock,cb,*args)
 
     def dispatch(self):
@@ -140,18 +145,22 @@ class Registrar(object):
         return e or t or self.signals
 
     def abort(self):
+        self.log("abort")
         self.run_dispatch = False
         for ev_list in list(self.events.values()):
             for sockio in list(ev_list.values()):
                 sockio.delete()
 
     def abort_branch(self):
+        self.log("abort_branch")
         raise AbortBranch()
 
     def signal(self,sig,cb,*args):
+        self.log("signal")
         return Signal(self,sig,cb,*args)
 
     def timeout(self,delay,cb,*args):
+        self.log("timeout")
         return Timer(self,delay,cb,*args)
 
     def add_timer(self, timer):
@@ -181,9 +190,10 @@ class Registrar(object):
         try:
             self.events[etype][fd].callback()
         except AbortBranch as e:
-            pass # just go on with other code :)
+            self.log("AbortBranch") # just go on with other code :)
 
     def handle_error(self, fd):
+        self.log("handle_error", fd)
         if fd in self.events['error']:
             self.callback('error', fd)
 
@@ -284,16 +294,18 @@ class PollRegistrar(Registrar):
             raise ImportError("could not import poll")
 
     def add(self, event):
+        self.log("add", event.evtype, event.fd)
         self.events[event.evtype][event.fd] = event
         self.register(event.fd)
 
     def remove(self, event):
+        self.log("remove", event.fd)
         if event.fd in self.events[event.evtype]:
             del self.events[event.evtype][event.fd]
             try:
                 self.poll.unregister(event.fd)
             except OSError:
-                pass # this shouldn't happen....
+                self.log("remove OSError!!") # this shouldn't happen....
             self.register(event.fd)
 
     def check_events(self):
@@ -313,6 +325,7 @@ class PollRegistrar(Registrar):
         return False
 
     def register(self, fd):
+        self.log("register", fd)
         mode = 0
         if fd in self.events['read']:
             mode = mode|select.POLLIN

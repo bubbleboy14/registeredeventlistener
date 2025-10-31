@@ -23,13 +23,18 @@ class BuffWrite(object):
 		self.position = 0
 
 	def write(self, sock):
-		try:
-			self.sender(sock, self.data[self.position])
-		except Exception as e:
-			self.error = e
-			return self.reset()
-		self.position += 1
-		if self.position == len(self.data):
+		dlen = len(self.data)
+		if self.position >= dlen:
+			self.log("aborting! position", self.position, ">= len(data)", dlen, "(how?)")
+			self.position = dlen
+		else:
+			try:
+				self.sender(sock, self.data[self.position])
+			except Exception as e:
+				self.error = e
+				return self.reset()
+			self.position += 1
+		if self.position == dlen:
 			self.complete = True
 			self.log("write complete")
 

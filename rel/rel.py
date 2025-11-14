@@ -227,6 +227,18 @@ def dispatch():
         check_init()
         registrar.dispatch()
 
+def pause():
+    global running
+    if running:
+        running = False
+        registrar.pause()
+
+def resume(): # like dispatch w/ no check_init()
+    global running
+    if not running:
+        running = True
+        registrar.dispatch()
+
 def loop():
     check_init()
     registrar.loop()

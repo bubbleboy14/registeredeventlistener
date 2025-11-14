@@ -134,6 +134,9 @@ class Registrar(Basic):
             if not self.loop():
                 self.run_dispatch = False
 
+    def pause(self):
+        self.run_dispatch = False
+
     def loop(self):
         if SLEEP_TURBO and (self.events["write"] or self.events["read"]):
             time.sleep(SLEEP_TURBO)

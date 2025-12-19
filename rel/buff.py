@@ -25,7 +25,7 @@ class BuffWrite(object):
 	def write(self, sock):
 		dlen = len(self.data)
 		if self.position >= dlen:
-			self.log("aborting! position", self.position, ">= len(data)", dlen, "(how?)")
+			self.log("aborting! position %s >= len(data) dlen: %s (how?)"%(self.position, dlen))
 			self.position = dlen
 		else:
 			try:

@@ -84,9 +84,8 @@ def kbint(signals):
 class Registrar(Basic):
     def __init__(self):
         self.events = {'read':{},'write':{},'error':{}}
-        self.timers = []
-        self.addlist = []
-        self.rmlist = []
+        self.timers = set()
+        self.ordered_timers = None
         self.signals = {}
         self.tick = 0
         self.run_dispatch = False
@@ -167,26 +166,23 @@ class Registrar(Basic):
         return Timer(self,delay,cb,*args)
 
     def add_timer(self, timer):
-         self.addlist.append(timer)
+         self.timers.add(timer)
+         # Force a re-sort of the list
+         self.ordered_timers = None
 
     def remove_timer(self, timer):
-        self.rmlist.append(timer)
+         self.timers.discard(timer)
+         # Force a re-sort of the list
+         self.ordered_timers = None
 
     def check_timers(self):
-        changes = len(self.addlist) or len(self.rmlist)
-        for timer in self.addlist:
-            if timer not in self.timers:
-                self.timers.append(timer)
-        self.addlist = []
-        for timer in self.rmlist:
-            if timer in self.timers:
-                self.timers.remove(timer)
-        self.rmlist = []
-        changes and self.timers.sort(key=operator.attrgetter("expiration"))
+        if self.ordered_timers is None:
+            # The timers list has changed, create and sort it
+            self.ordered_timers = sorted(self.timers, key=operator.attrgetter("expiration"))
         t = time.monotonic()
-        for timer in self.timers:
+        for timer in self.ordered_timers:
             if not timer.check(t):
-                self.rmlist.append(timer)
+                self.remove_timer(timer)
         return bool(self.timers)
 
     def callback(self, etype, fd):

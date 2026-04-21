@@ -192,7 +192,7 @@ class Timer(object):
         self.delay = delay
         self.expiration = None
         if self.delay is not None:
-            self.expiration = time.time()+self.delay
+            self.expiration = time.monotonic()+self.delay
             self.registrar.add_timer(self)
 
     def delete(self, dereference=False):
@@ -210,7 +210,7 @@ class Timer(object):
     def check(self, t=None):
         if not self.pending():
             return False
-        if (t or time.time()) >= self.expiration:
+        if (t or time.monotonic()) >= self.expiration:
             if self.cb(*self.args):
                 self.add(self.delay)
                 return True

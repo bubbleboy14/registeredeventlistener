@@ -183,7 +183,7 @@ class Registrar(Basic):
                 self.timers.remove(timer)
         self.rmlist = []
         changes and self.timers.sort(key=operator.attrgetter("expiration"))
-        t = time.time()
+        t = time.monotonic()
         for timer in self.timers:
             if not timer.check(t):
                 self.rmlist.append(timer)

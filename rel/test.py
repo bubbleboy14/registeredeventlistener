@@ -70,10 +70,10 @@ class EventTest(unittest.TestCase):
 
     def test_timeout(self):
         def __timeout_cb(ev, handle, evtype, ts):
-            now = time.time()
+            now = time.monotonic()
             self.call_back_ran = True
             assert int(now - ts['start']) == ts['secs'], 'timeout failed'
-        ts = {'start': time.time(), 'secs': 5}
+        ts = {'start': time.monotonic(), 'secs': 5}
         ev = event.event(__timeout_cb, arg=ts)
         ev.add(ts['secs'])
         event.dispatch()
@@ -82,9 +82,9 @@ class EventTest(unittest.TestCase):
     def test_timeout2(self):
         def __timeout2_cb(start, secs):
             self.call_back_ran = True
-            dur = int(time.time() - start)
+            dur = int(time.monotonic() - start)
             assert dur == secs, 'timeout2 failed'
-        event.timeout(5, __timeout2_cb, time.time(), 5)
+        event.timeout(5, __timeout2_cb, time.monotonic(), 5)
         event.dispatch()
         self.assertTrue(self.call_back_ran, 'call back did not run')
    

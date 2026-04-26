@@ -87,7 +87,24 @@ class EventTest(unittest.TestCase):
         event.timeout(5, __timeout2_cb, time.monotonic(), 5)
         event.dispatch()
         self.assertTrue(self.call_back_ran, 'call back did not run')
-   
+
+    def test_timers(self):
+        """
+        Check that timers operations (add/delete) are performed in order.
+        """
+        timer_delay = 2
+        def _timer_cb():
+            self.call_back_ran = True
+            delay = int(time.monotonic() - loop_start)
+            assert delay == timer_delay, 'timers failed'
+
+        timer = event.timeout(timer_delay * 2, _timer_cb)
+        timer.delete()
+        timer.add(timer_delay)
+        loop_start = time.monotonic()
+        event.dispatch()
+        self.assertTrue(self.call_back_ran, 'call back did not run')
+
     def test_signal(self):
         if not hasattr(signal, 'SIGUSR1'):
             self.skip('signal.SIGUSR1 missing (probably Windows)')

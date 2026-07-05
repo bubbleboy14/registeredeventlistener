@@ -52,7 +52,7 @@ in which case it ramps up to push the bytes through faster. These rates
 """
 
 from datetime import datetime
-import select, signal, time, operator
+import select, signal, time, operator, errno
 from .listener import Event, SocketIO, Timer, Signal, contains
 from .errors import AbortBranch
 from .util import Basic
@@ -216,12 +216,12 @@ class KqueueRegistrar(Registrar):
     def abort(self):
         Registrar.abort(self)
         self.kq.close()
-    
+
     def add(self, event):
         self.events[event.evtype][event.fd] = event
         if event.evtype != "error": # comes in as a write...
             self.kq.control([select.kevent(event.fd, self.kqf[event.evtype], select.KQ_EV_ADD)], 0)
-    
+
     def remove(self, event):
         if event.fd in self.events[event.evtype]:
             del self.events[event.evtype][event.fd]
@@ -229,7 +229,7 @@ class KqueueRegistrar(Registrar):
                 self.kq.control([select.kevent(event.fd, self.kqf[event.evtype], select.KQ_EV_DELETE)], 0)
             except Exception as e:
                 pass #connection probably closed
-    
+
     def check_events(self):
         if self.events['read'] or self.events['write']:
             elist = self.kq.control(None, 1000, LISTEN_KQUEUE)
@@ -305,7 +305,7 @@ class PollRegistrar(Registrar):
                 self.poll.unregister(event.fd)
             except OSError:
                 self.log("remove OSError!!") # this shouldn't happen....
-            self.register(event.fd)
+            self.register(event.fd, from_remove=True)
 
     def check_events(self):
         if self.events['read'] or self.events['write']:
@@ -323,7 +323,7 @@ class PollRegistrar(Registrar):
             return True
         return False
 
-    def register(self, fd):
+    def register(self, fd, from_remove=False):
         self.log("register", fd)
         mode = 0
         if fd in self.events['read']:
@@ -335,11 +335,18 @@ class PollRegistrar(Registrar):
         if mode:
             try:
                 self.poll.register(fd, mode)
-            except select.error:
-                try:
-                    self.poll.modify(fd, mode)
-                except:
-                    self.handle_error(fd)
+            except select.error as e:
+                if from_remove and e.errno in (errno.EBADF, errno.ENOENT, errno.EPERM):
+                    # The socket is probably closed, and some cleanup code is removing
+                    # each event one by one. There is no need to add back the
+                    # remaining events because they will all be removed in the end.
+                    # The errno values come from libevent (see epoll_apply_one_change()).
+                    pass
+                else:
+                    try:
+                        self.poll.modify(fd, mode)
+                    except:
+                        self.handle_error(fd)
 
 class EpollRegistrar(PollRegistrar):
     def __init__(self):

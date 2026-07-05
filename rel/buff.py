@@ -92,9 +92,25 @@ class BuffWriter(object):
 		for etype in self.listeners:
 			self.listeners[etype].pending() or self.listeners[etype].add()
 
+	def release(self):
+		self.log("release")
+		self.writes = []
+		self.errors = []
+		for event in self.listeners.values():
+			event.delete()
+		self.listeners = {}
+
 def buffwrite(sock, data, sender, onerror):
 	writer = writings.get(sock)
 	if writer is not None:
 		writer.ingest(data)
 	else:
 		writings[sock] = BuffWriter(sock, data, sender, onerror)
+
+def release_buff(sock):
+	'''
+	Release the resources from the BuffWriter associated with the given socket.
+	'''
+	writer = writings.pop(sock, None)
+	if writer is not None:
+		writer.release()

@@ -93,10 +93,8 @@ class BuffWriter(object):
 			self.listeners[etype].pending() or self.listeners[etype].add()
 
 def buffwrite(sock, data, sender, onerror):
-	fn = sock.fileno()
-	if fn in writings:
-		writings[fn].sock = sock
-		writings[fn].ingest(data)
+	writer = writings.get(sock)
+	if writer is not None:
+		writer.ingest(data)
 	else:
-		writings[fn] = BuffWriter(sock, data, sender, onerror)
-	
+		writings[sock] = BuffWriter(sock, data, sender, onerror)

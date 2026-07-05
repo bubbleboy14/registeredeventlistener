@@ -89,8 +89,8 @@ class BuffWriter(object):
 	def ingest(self, data):
 		self.log("ingesting %s bytes"%(len(data),))
 		self.writes.append(BuffWrite(data, self.sender))
-		for etype in self.listeners:
-			self.listeners[etype].pending() or self.listeners[etype].add()
+		for event in self.listeners.values():
+			event.pending() or event.add()
 
 	def release(self):
 		self.log("release")

@@ -62,7 +62,16 @@ class BuffWriter(object):
 	def log(self, *msg):
 		log("BuffWriter[%s]: %s"%(self.fileno, " ".join(msg)))
 
-	def error(self, msg="unexpected error"):
+	def error(self, msg=None):
+		if msg is None:
+			msg = "unexpected error"
+			# Try to extract the error from the socket
+			try:
+				err = self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
+				if err != 0:
+					msg = os.strerror(err)
+			except Exception:
+				pass
 		self.onerror(msg)
 		self.errors.append(msg)
 		self.log("error #%s: %s"%(len(self.errors), msg))

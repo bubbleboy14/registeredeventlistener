@@ -98,14 +98,28 @@ class BuffWriter(object):
 	def ingest(self, data):
 		self.log("ingesting %s bytes"%(len(data),))
 		self.writes.append(BuffWrite(data, self.sender))
-		for etype in self.listeners:
-			self.listeners[etype].pending() or self.listeners[etype].add()
+		for event in self.listeners.values():
+			event.pending() or event.add()
+
+	def release(self):
+		self.log("release")
+		self.writes = []
+		self.errors = []
+		for event in self.listeners.values():
+			event.delete()
+		self.listeners = {}
 
 def buffwrite(sock, data, sender, onerror):
-	fn = sock.fileno()
-	if fn in writings:
-		writings[fn].sock = sock
-		writings[fn].ingest(data)
+	writer = writings.get(sock)
+	if writer is not None:
+		writer.ingest(data)
 	else:
-		writings[fn] = BuffWriter(sock, data, sender, onerror)
-	
+		writings[sock] = BuffWriter(sock, data, sender, onerror)
+
+def release_buff(sock):
+	'''
+	Release the resources from the BuffWriter associated with the given socket.
+	'''
+	writer = writings.pop(sock, None)
+	if writer is not None:
+		writer.release()
